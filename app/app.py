@@ -5,6 +5,7 @@ import numpy as np
 import faiss
 from sentence_transformers import SentenceTransformer
 from groq import Groq
+from rag_langgraph.app_langgraph import responder
  
  
 # ============================
@@ -171,7 +172,7 @@ if st.button("Consultar"):
         st.warning("Por favor ingresa una pregunta.")
     else:
         with st.spinner("Generando respuesta..."):
-            respuesta = rag_responder(pregunta)
+            respuesta = responder(pregunta)
  
         st.subheader("📌 Respuesta")
         st.write(respuesta)
@@ -183,7 +184,7 @@ st.markdown(
     <div style='text-align: center; color: gray; font-size: 0.82em; padding: 10px 0'>
         <b>Autores:</b> Yibby Gonzalez · Juan Ruiz &nbsp;|&nbsp;
         <b>Profesores:</b> Juan Pablo Páramo · Fabián Gil <br>
-        📧 Contacto: <a href='mailto:gonzalez_yibby@javeriana.edu.co' style='color: gray;'>gonzalez_yibby@javeriana.edu.co</a>
+        📧 Comentarios, mejoras o sugerencia a: <a href='mailto:gonzalez_yibby@javeriana.edu.co' style='color: gray;'>gonzalez_yibby@javeriana.edu.co</a>
     </div>
     """,
     unsafe_allow_html=True
