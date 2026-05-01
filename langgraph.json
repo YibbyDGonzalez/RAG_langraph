@@ -1,0 +1,7 @@
+{
+  "dependencies": ["."],
+  "graphs": {
+    "agente_servicio": "./rag_langgraph/app_langgraph.py:graph"
+  },
+  "env": ".env"
+}

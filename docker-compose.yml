@@ -1,0 +1,31 @@
+services:
+  ollama:
+    build:
+      context: .
+      dockerfile: Dockerfile.ollama
+    image: mbe-ollama:latest
+    ports:
+      - "11434:11434"
+    healthcheck:
+      test: ["CMD", "curl", "-sf", "http://localhost:11434/api/tags"]
+      interval: 10s
+      timeout: 5s
+      retries: 10
+      start_period: 10s
+
+  app:
+    build:
+      context: .
+      dockerfile: Dockerfile.app
+    image: mbe-app:latest
+    ports:
+      - "8501:8501"
+    volumes:
+      # Los datos (FAISS index + CSV) se montan como volumen para poder
+      # actualizarlos sin reconstruir la imagen
+      - ./data:/app/data:ro
+    environment:
+      - OLLAMA_HOST=http://ollama:11434
+    depends_on:
+      ollama:
+        condition: service_healthy

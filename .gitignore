@@ -1,4 +1,6 @@
 @"
+.claude/
+.langgraph_api/
 venv/
 .venv/
 .streamlit/secrets.toml
