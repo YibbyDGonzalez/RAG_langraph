@@ -6,12 +6,20 @@ services:
     image: mbe-ollama:latest
     ports:
       - "11434:11434"
+    volumes:
+      # El modelo vive aquí: se descarga una vez y persiste entre reinicios
+      - ollama_models:/root/.ollama
     healthcheck:
-      test: ["CMD", "curl", "-sf", "http://localhost:11434/api/tags"]
-      interval: 10s
-      timeout: 5s
-      retries: 10
-      start_period: 10s
+      # Verifica el modelo via API directa (evita que ollama list cuelgue)
+      test:
+        [
+          "CMD-SHELL",
+          "curl -sf http://localhost:11434/api/tags | grep -q 'llama3.2'",
+        ]
+      interval: 20s
+      timeout: 10s
+      retries: 60 # hasta 20 min de paciencia en la primera descarga
+      start_period: 15s
 
   app:
     build:
@@ -21,11 +29,14 @@ services:
     ports:
       - "8501:8501"
     volumes:
-      # Los datos (FAISS index + CSV) se montan como volumen para poder
-      # actualizarlos sin reconstruir la imagen
+      # Los datos (FAISS index + CSV) se montan para poder actualizarlos
+      # sin reconstruir la imagen
       - ./data:/app/data:ro
     environment:
       - OLLAMA_HOST=http://ollama:11434
     depends_on:
       ollama:
         condition: service_healthy
+
+volumes:
+  ollama_models: # volumen nombrado — persiste el modelo entre reinicios
