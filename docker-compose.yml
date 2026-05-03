@@ -1,5 +1,4 @@
 services:
-
   ollama:
     build:
       context: .
@@ -12,10 +11,14 @@ services:
       - ollama_models:/root/.ollama
     healthcheck:
       # Verifica el modelo via API directa (evita que ollama list cuelgue)
-      test: ["CMD-SHELL", "curl -sf http://localhost:11434/api/tags | grep -q 'llama3.2'"]
+      test:
+        [
+          "CMD-SHELL",
+          "curl -sf http://localhost:11434/api/tags | grep -q 'llama3.2'",
+        ]
       interval: 20s
       timeout: 10s
-      retries: 60        # hasta 20 min de paciencia en la primera descarga
+      retries: 60 # hasta 20 min de paciencia en la primera descarga
       start_period: 15s
 
   app:
@@ -36,4 +39,4 @@ services:
         condition: service_healthy
 
 volumes:
-  ollama_models:    # volumen nombrado — persiste el modelo entre reinicios
+  ollama_models: # volumen nombrado — persiste el modelo entre reinicios
