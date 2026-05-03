@@ -1,12 +1,8 @@
 FROM ollama/ollama
 
-# Pre-download llama3.2:3b at build time so the image is fully portable
-RUN /bin/bash -c "\
-    ollama serve & \
-    until curl -sf http://localhost:11434/api/tags > /dev/null 2>&1; do sleep 1; done && \
-    ollama pull llama3.2:3b && \
-    pkill ollama"
+COPY ollama-entrypoint.sh /ollama-entrypoint.sh
+RUN chmod +x /ollama-entrypoint.sh
 
 EXPOSE 11434
 
-CMD ["serve"]
+ENTRYPOINT ["/ollama-entrypoint.sh"]
