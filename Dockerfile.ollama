@@ -4,12 +4,8 @@ EXPOSE 11434
 
 ENTRYPOINT ["/bin/bash", "-c", "\
   ollama serve & \
-  echo 'Esperando a que Ollama arranque...' && \
   until curl -sf http://localhost:11434/api/tags > /dev/null 2>&1; do sleep 1; done && \
-  if ! ollama list 2>/dev/null | grep -q 'llama3.2:3b'; then \
-    echo 'Primera ejecucion: descargando llama3.2:3b (~2 GB)...' && \
-    ollama pull llama3.2:3b; \
-  else \
-    echo 'Modelo ya disponible.'; \
-  fi && \
+  echo 'Servidor listo. Descargando modelo llama3.2:3b...' && \
+  ollama pull llama3.2:3b && \
+  echo 'Modelo listo.' && \
   wait"]
