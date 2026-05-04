@@ -1,5 +1,13 @@
 FROM ollama/ollama
 
+# Instalar curl y dos2unix para diagnostico y correccion de line endings de Windows
+RUN apt-get update && apt-get install -y --no-install-recommends curl dos2unix \
+    && rm -rf /var/lib/apt/lists/*
+
 EXPOSE 11434
 
-ENTRYPOINT ["/bin/bash", "-c", "ollama serve & until curl -sf http://localhost:11434/api/tags > /dev/null 2>&1; do sleep 1; done && echo 'Descargando llama3.2:3b...' && ollama pull llama3.2:3b && echo 'Modelo listo.' && wait"]
+# Copiar el script y convertir CRLF -> LF (necesario cuando se edita en Windows)
+COPY ollama-entrypoint.sh /entrypoint.sh
+RUN dos2unix /entrypoint.sh && chmod +x /entrypoint.sh
+
+ENTRYPOINT ["/entrypoint.sh"]

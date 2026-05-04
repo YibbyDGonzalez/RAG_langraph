@@ -1,89 +1,274 @@
+﻿import sys
+import os
+import uuid
+import time
+
+_project_root = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
+if _project_root not in sys.path:
+    sys.path.insert(0, _project_root)
+
+import yaml
 import streamlit as st
-from app.core import load_resources, buscar_articulos, call_ollama
-from rag_langgraph.app_langgraph import responder
+import streamlit_authenticator as stauth
+from yaml.loader import SafeLoader
+
+from core import load_resources
+from rag_langgraph.app_langgraph import responder_stream_logged
+from logger import init_db, log_consulta
 
 
 # ============================
-# 1. CARGA DE MODELOS Y DATOS
+# CONFIGURACION DE PAGINA
+# ============================
+
+st.set_page_config(
+    page_title="Asistente MBE - Javeriana",
+    page_icon="🔬",
+    layout="wide",
+    initial_sidebar_state="expanded"
+)
+
+st.markdown("""
+<style>
+    #MainMenu {visibility: hidden;}
+    footer {visibility: hidden;}
+    header {visibility: hidden;}
+    .block-container { padding-top: 1.5rem; padding-bottom: 2rem; max-width: 860px; }
+</style>
+""", unsafe_allow_html=True)
+
+
+# ============================
+# AUTENTICACION
+# ============================
+
+USERS_PATH = os.path.join(_project_root, "users.yaml")
+
+with open(USERS_PATH) as f:
+    config = yaml.load(f, Loader=SafeLoader)
+
+authenticator = stauth.Authenticate(
+    config["credentials"],
+    config["cookie"]["name"],
+    config["cookie"]["key"],
+    config["cookie"]["expiry_days"],
+    config.get("preauthorized", {"emails": [""]}),
+)
+
+name, auth_status, username = authenticator.login("Iniciar sesion", "main")
+
+if auth_status is False:
+    st.error("Usuario o contrasena incorrectos.")
+    st.stop()
+
+if auth_status is None:
+    logo_path = os.path.join(_project_root, "Javeriana.png")
+    col_l, col_c, col_r = st.columns([1, 2, 1])
+    with col_c:
+        if os.path.exists(logo_path):
+            st.image(logo_path, use_container_width=True)
+        st.markdown(
+            "<h3 style='text-align:center;'>Asistente MBE</h3>"
+            "<p style='text-align:center; color:gray;'>Facultad de Medicina - Javeriana</p>",
+            unsafe_allow_html=True,
+        )
+    st.stop()
+
+
+# ============================
+# INICIALIZAR LOGS DB
+# ============================
+
+init_db()
+
+
+# ============================
+# CARGA DE RECURSOS
 # ============================
 
 @st.cache_resource
 def _load_resources():
     return load_resources()
 
-
 df, embeddings, index, encoder, ollama_client = _load_resources()
 
 
 # ============================
-# 3. INTERFAZ STREAMLIT
+# ESTADO DE SESION
 # ============================
 
-st.set_page_config(page_title="Asistente educativo Javeriana", page_icon="🧪")
+def crear_chat():
+    chat_id = str(uuid.uuid4())
+    st.session_state.chats[chat_id] = {"title": "Nueva conversacion", "messages": []}
+    st.session_state.active_chat = chat_id
 
-st.title("🔬 Asistente MBE • Facultad de medicina PUJ")
+if "chats" not in st.session_state:
+    st.session_state.chats = {}
+    crear_chat()
 
-# --- Párrafo objetivo ---
-with st.expander("ℹ️ ¿Qué es este asistente?", expanded=False):
+if "active_chat" not in st.session_state or \
+   st.session_state.active_chat not in st.session_state.chats:
+    crear_chat()
+
+
+# ============================
+# SIDEBAR
+# ============================
+
+with st.sidebar:
+    logo_path = os.path.join(_project_root, "Javeriana.png")
+    if os.path.exists(logo_path):
+        st.image(logo_path, use_container_width=True)
+    else:
+        st.markdown("## Javeriana")
+
+    nombre_usuario = st.session_state.get("name", username)
+    st.markdown(f"👤 **{nombre_usuario}**")
+    authenticator.logout("Cerrar sesion", "sidebar")
+
+    st.markdown("---")
+
+    if st.button("＋  Nueva conversacion", use_container_width=True, type="primary"):
+        crear_chat()
+        st.rerun()
+
+    st.markdown("---")
+    st.caption("CONVERSACIONES")
+
+    for chat_id, chat_data in reversed(list(st.session_state.chats.items())):
+        es_activo = chat_id == st.session_state.active_chat
+        icono = "💬" if es_activo else "🗨️"
+        if st.button(
+            f"{icono}  {chat_data['title']}",
+            key=f"btn_{chat_id}",
+            use_container_width=True,
+        ):
+            st.session_state.active_chat = chat_id
+            st.rerun()
+
+    st.markdown("---")
+    db_path = os.path.join(_project_root, "data", "logs", "mbe_logs.db")
+    if os.path.exists(db_path):
+        with open(db_path, "rb") as f:
+            st.download_button(
+                label="⬇️ Descargar logs (.db)",
+                data=f,
+                file_name="mbe_logs.db",
+                mime="application/octet-stream",
+                use_container_width=True,
+            )
+
+    st.markdown("---")
     st.markdown(
-        """
-        Este asistente ha sido diseñado como una herramienta de apoyo académico para estudiantes
-        de medicina que cursan la materia de Medicina Basada en la Evidencia. A través de un sistema
-        de recuperación de información, permite consultar conceptos, metodologías y principios
-        fundamentales de la MBE, facilitando la comprensión y aplicación de sus herramientas
-        en el contexto clínico y académico.
-
-        Este asistente se basa en literatura académica reconocida en Medicina Basada en la Evidencia, incluyendo:
-
-        🔹Painless Evidence-Based Medicine — Antonio L. Dans, Leonila F. Dans, Maria Asuncion A. Silvestre
-        🔹Users' Guides to the Medical Literature: A Manual for Evidence-Based Medicine — Gordon Guyatt, Drummond Rennie, Maureen O. Meade, Deborah J. Cook
-        """
+        "<div style='font-size:0.75em; color:gray; line-height:1.6;'>"
+        "<b>Autores</b><br>Yibby Gonzalez - Juan Ruiz<br><br>"
+        "<b>Profesores</b><br>Juan Pablo Paramo - Fabian Gil"
+        "</div>",
+        unsafe_allow_html=True,
     )
 
-st.divider()
 
-# --- Preguntas sugeridas ---
-st.subheader("Preguntas sugeridas:")
-col1, col2, col3 = st.columns(3)
+# ============================
+# AREA PRINCIPAL
+# ============================
 
-q1 = "¿Qué es la medicina basada en la evidencia y cuáles son sus pasos principales?"
-q2 = "¿Cuál es la diferencia entre un estudio observacional y un ensayo clínico aleatorizado?"
-q3 = "¿Qué significa el nivel de evidencia de un estudio y cómo se clasifica?"
+chat_activo = st.session_state.chats[st.session_state.active_chat]
+mensajes    = chat_activo["messages"]
 
-if col1.button(q1):
-    st.session_state["pregunta"] = q1
-
-if col2.button(q2):
-    st.session_state["pregunta"] = q2
-
-if col3.button(q3):
-    st.session_state["pregunta"] = q3
-
-# --- Input de pregunta ---
-pregunta = st.text_input(
-    "Haz una pregunta sobre tratamientos, estudios, diagnósticos, etc:",
-    value=st.session_state.get("pregunta", "")
-)
-
-if st.button("Consultar"):
-    if pregunta.strip() == "":
-        st.warning("Por favor ingresa una pregunta.")
-    else:
-        with st.spinner("Generando respuesta..."):
-            respuesta = responder(pregunta)
-
-        st.subheader("📌 Respuesta")
-        st.write(respuesta)
-
-# --- Créditos al pie ---
-st.divider()
 st.markdown(
-    """
-    <div style='text-align: center; color: gray; font-size: 0.82em; padding: 10px 0'>
-        <b>Autores:</b> Yibby Gonzalez · Juan Ruiz &nbsp;|&nbsp;
-        <b>Profesores:</b> Juan Pablo Páramo · Fabián Gil <br>
-        📧 Comentarios, mejoras o sugerencia a: <a href='mailto:gonzalez_yibby@javeriana.edu.co' style='color: gray;'>gonzalez_yibby@javeriana.edu.co</a>
-    </div>
-    """,
-    unsafe_allow_html=True
+    "<h2 style='text-align:center; margin-bottom:0;'>🔬 Asistente MBE</h2>"
+    "<p style='text-align:center; color:gray; margin-top:4px;'>"
+    "Facultad de Medicina - Pontificia Universidad Javeriana</p>",
+    unsafe_allow_html=True,
 )
+st.divider()
+
+# Pantalla de bienvenida
+if not mensajes:
+    st.markdown("<br>", unsafe_allow_html=True)
+    st.markdown(
+        "<p style='text-align:center; color:#555; font-size:1.05rem;'>"
+        "Hola 👋 Soy tu asistente de Medicina Basada en la Evidencia.<br>"
+        "Puedes hacerme preguntas o elegir una de las sugerencias:</p>",
+        unsafe_allow_html=True,
+    )
+    st.markdown("<br>", unsafe_allow_html=True)
+
+    sugerencias = [
+        "Que es la medicina basada en la evidencia y cuales son sus pasos principales?",
+        "Cual es la diferencia entre un estudio observacional y un ensayo clinico aleatorizado?",
+        "Que significa el nivel de evidencia de un estudio y como se clasifica?",
+    ]
+    for col, sug in zip(st.columns(3), sugerencias):
+        with col:
+            if st.button(sug, use_container_width=True, key=f"sug_{sug[:20]}"):
+                st.session_state["pending_question"] = sug
+                st.rerun()
+
+# Historial de mensajes
+for msg in mensajes:
+    avatar = "🧑" if msg["role"] == "user" else "🔬"
+    with st.chat_message(msg["role"], avatar=avatar):
+        st.markdown(msg["content"])
+
+# Input
+pregunta = st.chat_input("Escribe tu pregunta sobre MBE, tratamientos, estudios...")
+
+if "pending_question" in st.session_state:
+    pregunta = st.session_state.pop("pending_question")
+
+
+# ============================
+# PROCESAR PREGUNTA + LOGGING
+# ============================
+
+if pregunta:
+    t_total_start = time.time()
+
+    if not mensajes:
+        titulo = pregunta[:45] + "..." if len(pregunta) > 45 else pregunta
+        st.session_state.chats[st.session_state.active_chat]["title"] = titulo
+
+    mensajes.append({"role": "user", "content": pregunta})
+    with st.chat_message("user", avatar="🧑"):
+        st.markdown(pregunta)
+
+    # Primer yield del stream es el dict de metadata
+    stream = responder_stream_logged(
+        pregunta,
+        df=df,
+        index=index,
+        encoder=encoder,
+        ollama_client=ollama_client,
+    )
+    meta = next(stream)
+
+    # Stream manual con cursor de escritura en tiempo real
+    with st.chat_message("assistant", avatar="🔬"):
+        placeholder = st.empty()
+        respuesta_completa = ""
+        for token in stream:
+            respuesta_completa += token
+            placeholder.markdown(respuesta_completa + "▌")
+        placeholder.markdown(respuesta_completa)
+
+    # Latencias finales
+    lat_llm   = time.time() - meta["llm_start"]
+    lat_total = time.time() - t_total_start
+
+    # Guardar en SQLite
+    log_consulta(
+        usuario            = username,
+        session_id         = st.session_state.active_chat,
+        pregunta           = pregunta,
+        chunks             = meta["chunks"],
+        scores             = meta["scores"],
+        respuesta          = respuesta_completa,
+        latencia_embedding = meta["lat_embedding"],
+        latencia_retrieval = meta["lat_retrieval"],
+        latencia_llm       = lat_llm,
+        latencia_total     = lat_total,
+    )
+
+    mensajes.append({"role": "assistant", "content": respuesta_completa})
+    st.rerun()
