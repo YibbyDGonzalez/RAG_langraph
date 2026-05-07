@@ -59,7 +59,7 @@ def call_ollama(prompt: str, *, ollama_client) -> str:
             {"role": "system", "content": _SYSTEM_PROMPT},
             {"role": "user", "content": prompt},
         ],
-        options={"temperature": 0.2, "num_predict": 1300},
+        options={"temperature": 0.2, "num_predict": 1300, "num_ctx": 1024},
     )
     return response["message"]["content"]
 
@@ -73,7 +73,7 @@ def call_ollama_stream(prompt: str, *, ollama_client) -> Generator[str, None, No
             {"role": "system", "content": _SYSTEM_PROMPT},
             {"role": "user", "content": prompt},
         ],
-        options={"temperature": 0.2, "num_predict": 300},
+        options={"temperature": 0.2, "num_predict": 300,"num_ctx": 1024},
         stream=True,
     )
     for chunk in stream:
