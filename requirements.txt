@@ -12,8 +12,7 @@ langgraph>=0.1.0
 langchain-community>=0.2.0
 python-dotenv
 streamlit
-langchain-ollama
-ollama>=0.3.0
+groq
 pydantic>=2.0.0
 transformers>=4.40.0
 # torch se instala en una capa separada del Dockerfile (torch==2.6.0+cpu)

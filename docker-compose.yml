@@ -1,29 +1,4 @@
 services:
-  ollama:
-    build:
-      context: .
-      dockerfile: Dockerfile.ollama
-    image: mbe-ollama:latest
-    ports:
-      - "11434:11434"
-    deploy:
-      resources:
-        reservations:
-          devices:
-            - driver: nvidia
-              count: 1
-              capabilities: [gpu]
-    volumes:
-      # El modelo vive aqui: se descarga una vez y persiste entre reinicios
-      - ollama_models:/root/.ollama
-    healthcheck:
-      # Usa el CLI de ollama (siempre disponible en la imagen) en vez de curl
-      # Verifica que el servidor responde sin depender de herramientas externas
-      test: ["CMD-SHELL", "ollama list > /dev/null 2>&1"]
-      interval: 15s
-      timeout: 10s
-      retries: 20
-      start_period: 60s
 
   app:
     build:
@@ -41,11 +16,5 @@ services:
       - ./Javeriana.png:/app/Javeriana.png:ro
       # Usuarios para autenticacion (editable sin rebuild)
       - ./users.yaml:/app/users.yaml:ro
-    environment:
-      - OLLAMA_HOST=http://ollama:11434
-    depends_on:
-      ollama:
-        condition: service_healthy
-
-volumes:
-  ollama_models: # volumen nombrado — persiste el modelo entre reinicios
+    env_file:
+      - .env

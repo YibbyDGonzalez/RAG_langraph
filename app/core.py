@@ -1,14 +1,12 @@
 import os
-
 from dotenv import load_dotenv
-
 load_dotenv()
 from typing import Generator
 
 import faiss
 import numpy as np
-import ollama
 import pandas as pd
+from groq import Groq
 from sentence_transformers import SentenceTransformer
 
 ARTICLES_PATH = "data/processed/articulos_total.csv"
@@ -16,8 +14,7 @@ EMBEDDINGS_PATH = "data/processed/models/embeddings_total.npy"
 FAISS_PATH = "data/processed/models/faiss_index_total.bin"
 
 EMBED_MODEL_NAME = "sentence-transformers/paraphrase-multilingual-MiniLM-L12-v2"
-OLLAMA_MODEL = "llama3.2:1b"  # 1b: ~3x mas rapido en CPU que 3b, suficiente para RAG
-OLLAMA_HOST = os.getenv("OLLAMA_HOST", "http://localhost:11434")
+GROQ_MODEL = "llama-3.1-8b-instant"
 
 _SYSTEM_PROMPT = (
     "Eres un experto en Medicina Basada en la Evidencia (MBE). "
@@ -41,8 +38,13 @@ def load_resources():
     embeddings = np.load(EMBEDDINGS_PATH)
     index = faiss.read_index(FAISS_PATH)
     encoder = SentenceTransformer(EMBED_MODEL_NAME)
-    ollama_client = ollama.Client(host=OLLAMA_HOST)
-    return df, embeddings, index, encoder, ollama_client
+
+    api_key = os.getenv("GROQ_API_KEY")
+    if not api_key:
+        raise ValueError("GROQ_API_KEY no encontrada en variables de entorno.")
+    groq_client = Groq(api_key=api_key)
+
+    return df, embeddings, index, encoder, groq_client
 
 
 def buscar_articulos(query, top_k=3, *, encoder, index, df):
@@ -55,31 +57,32 @@ def buscar_articulos(query, top_k=3, *, encoder, index, df):
 
 
 def call_ollama(prompt: str, *, ollama_client) -> str:
-    """Llamada sincronica — devuelve el texto completo al terminar."""
-    response = ollama_client.chat(
-        model=OLLAMA_MODEL,
+    """Llamada sincronica via Groq — interfaz compatible con rama main."""
+    completion = ollama_client.chat.completions.create(
+        model=GROQ_MODEL,
         messages=[
             {"role": "system", "content": _SYSTEM_PROMPT},
             {"role": "user", "content": prompt},
         ],
-        options={"temperature": 0.2, "num_predict": 1300},
+        temperature=0.2,
+        max_tokens=1300,
     )
-    return response["message"]["content"]
+    return completion.choices[0].message.content
 
 
 def call_ollama_stream(prompt: str, *, ollama_client) -> Generator[str, None, None]:
-    """Llamada con streaming — hace yield de cada token al generarse.
-    Usar con st.write_stream() para que el usuario vea la respuesta en tiempo real."""
-    stream = ollama_client.chat(
-        model=OLLAMA_MODEL,
+    """Streaming via Groq — interfaz compatible con rama main."""
+    stream = ollama_client.chat.completions.create(
+        model=GROQ_MODEL,
         messages=[
             {"role": "system", "content": _SYSTEM_PROMPT},
             {"role": "user", "content": prompt},
         ],
-        options={"temperature": 0.2, "num_predict": 1300},
+        temperature=0.2,
+        max_tokens=1300,
         stream=True,
     )
     for chunk in stream:
-        token = chunk["message"]["content"]
+        token = chunk.choices[0].delta.content
         if token:
             yield token
