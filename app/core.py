@@ -1,19 +1,22 @@
 import os
+
 from dotenv import load_dotenv
+
 load_dotenv()
-import pandas as pd
-import numpy as np
-import faiss
-from sentence_transformers import SentenceTransformer
-import ollama
 from typing import Generator
+
+import faiss
+import numpy as np
+import ollama
+import pandas as pd
+from sentence_transformers import SentenceTransformer
 
 ARTICLES_PATH = "data/processed/articulos_total.csv"
 EMBEDDINGS_PATH = "data/processed/models/embeddings_total.npy"
 FAISS_PATH = "data/processed/models/faiss_index_total.bin"
 
 EMBED_MODEL_NAME = "sentence-transformers/paraphrase-multilingual-MiniLM-L12-v2"
-OLLAMA_MODEL = "llama3.2:1b"   # 1b: ~3x mas rapido en CPU que 3b, suficiente para RAG
+OLLAMA_MODEL = "llama3.2:1b"  # 1b: ~3x mas rapido en CPU que 3b, suficiente para RAG
 OLLAMA_HOST = os.getenv("OLLAMA_HOST", "http://localhost:11434")
 
 _SYSTEM_PROMPT = (
@@ -59,7 +62,7 @@ def call_ollama(prompt: str, *, ollama_client) -> str:
             {"role": "system", "content": _SYSTEM_PROMPT},
             {"role": "user", "content": prompt},
         ],
-        options={"temperature": 0.2, "num_predict": 1300, "num_ctx": 1024},
+        options={"temperature": 0.2, "num_predict": 1300},
     )
     return response["message"]["content"]
 
@@ -73,7 +76,7 @@ def call_ollama_stream(prompt: str, *, ollama_client) -> Generator[str, None, No
             {"role": "system", "content": _SYSTEM_PROMPT},
             {"role": "user", "content": prompt},
         ],
-        options={"temperature": 0.2, "num_predict": 300,"num_ctx": 1024},
+        options={"temperature": 0.2, "num_predict": 1300},
         stream=True,
     )
     for chunk in stream:
