@@ -3,7 +3,7 @@
 **Pontificia Universidad Javeriana · Facultad de Medicina**
 
 > **Autores:** Yibby González · Juan Ruiz
-> **Profesores:** Juan Pajaro · Fabián Armando
+> **Profesores:** Juan Pajaro · Fabian Armando
 
 ---
 
