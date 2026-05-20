@@ -49,12 +49,12 @@ Esta vista muestra el sistema como una caja negra y describe todas las entidades
    [Usuario]    ────────▶│                                  │────────▶  [Groq API]
    consulta     ◀────────│          AGENTE MBE              │◀────────  tokens SSE
                          │                                  │
-   [Administrador]──────▶│      (Sistema RAG conversacional)│
-   corpus · users        │                                  │
+                         │      (Sistema RAG conversacional)│
                          │                                  │
-   [Profesor]   ◀────────│                                  │
+                         │                                  │
+  [Administrador]   ◀────│                                  │
    logs · métricas       │                                  │
-                         └──────────────────────────────────┘
+   corpus · users        └──────────────────────────────────┘
 
    ──────▶  Comunicación obligatoria
    - - - ▶  Comunicación opcional
@@ -82,12 +82,12 @@ Esta vista descompone el sistema en módulos y submódulos, mostrando sus relaci
 │  ┌───────────────────┐      ┌───────────────────────────────┐    │
 │  │   Interfaz UI     │      │       Pipeline RAG            │    │
 │  │                   │      │                               │    │
-│  │  · Chat           │      │  ┌────────────────────────┐   │    │
-│  │  · Multi-sesión   │      │  │     Nodo Retrieve      │   │    │
-│  │  · Autenticación  │      │  │  · Embedding de query  │   │    │
-│  │  · Descarga logs  │      │  │  · Búsqueda FAISS top3 │   │    │
-│  └───────────────────┘      │  │  · Construcción contexto│  │    │
-│                             │  └────────────────────────┘   │    │
+│  │  · Chat           │      │  ┌───────────────────────── ┐ │    │
+│  │  · Multi-sesión   │      │  │     Nodo Retrieve        │ │    │
+│  │  · Autenticación  │      │  │  · Embedding de query    │ │    │
+│  │  · Descarga logs  │      │  │  · Búsqueda FAISS top3   │ │    │
+│  └───────────────────┘      │  │  · Construcción contexto │ │    │
+│                             │  └──────────────────────────┘ │    │
 │                             │  ┌────────────────────────┐   │    │
 │                             │  │     Nodo Generate      │   │    │
 │                             │  │  · Ensamblado prompt   │   │    │
@@ -96,13 +96,13 @@ Esta vista descompone el sistema en módulos y submódulos, mostrando sus relaci
 │                             │  └────────────────────────┘   │    │
 │                             └───────────────────────────────┘    │
 │                                                                  │
-│  ┌───────────────────┐      ┌───────────────┐  ┌─────────────┐   │
+│  ┌───────────────────┐      ┌───────────────┐  ┌──────────────┐  │
 │  │     Seguridad     │      │  Capa Datos   │  │Observabilidad│  │
-│  │                   │      │               │  │             │   │
-│  │  · Bcrypt/cookies │      │  · FAISS idx  │  │  · Logger   │   │
-│  │  · Sesión usuario │      │  · Embeddings │  │  · SQLite   │   │
-│  │  · API Key (env)  │      │  · CSV corpus │  │  · Latencias│   │
-│  └───────────────────┘      └───────────────┘  └─────────────┘   │
+│  │                   │      │               │  │              │  │
+│  │  · Bcrypt/cookies │      │  · FAISS idx  │  │  · Logger    │  │
+│  │  · Sesión usuario │      │  · Embeddings │  │  · SQLite    │  │
+│  │  · API Key (env)  │      │  · CSV corpus │  │  · Latencias │  │
+│  └───────────────────┘      └───────────────┘  └──────────────┘  │
 └──────────────────────────────────────────────────────────────────┘
 ```
 
@@ -162,16 +162,16 @@ Esta vista muestra cómo los módulos de software se distribuyen sobre la infrae
 ┌──────────────┐          ┌────────────────────────────────────┐          ┌─────────────────┐
 │    CLIENTE   │          │         SERVIDOR (Docker)          │          │   NUBE (Groq)   │
 │              │          │                                    │          │                 │
-│  Navegador   │◀────────▶│  Streamlit App  [:8501]           │─────────▶│  LLaMA 3.1-8b   │
-│  Web         │   HTTP/  │  LangGraph Pipeline               │  HTTPS   │  REST + SSE     │
-│              │  WS      │  SentenceTransformer (en memoria) │  stream  │                 │
-│  Sin lógica  │          │  Cliente Groq SDK                 │          │  Sin estado     │
-│  local       │          │                                    │          │  propio         │
-└──────────────┘          │  Volúmenes montados:              │          └─────────────────┘
-                          │  ├── /data/processed  (ro) ──────── corpus + índice FAISS
-                          │  ├── /data/logs       (rw) ──────── mbe_logs.db
-                          │  ├── users.yaml       (ro) ──────── credenciales
-                          │  └── .env             (secret) ──── GROQ_API_KEY
+│  Navegador   │◀────────▶│  Streamlit App  [:8501]            │─────────▶│  LLaMA 3.1-8b   │
+│  Web         │   HTTP/  │  LangGraph Pipeline                │  HTTPS   │  REST + SSE     │
+│              │          │  SentenceTransformer (en memoria)  │  stream  │                 │
+│              │          │  Cliente Groq                      │          │                 │
+│              │          │                                    │          │                 │
+└──────────────┘          │  Volúmenes:                        │          └─────────────────┘
+                          │  ├── /data/processed  (ro) ─────── │ corpus + índice FAISS
+                          │  ├── /data/logs       (rw) ────────│ mbe_logs.db
+                          │  ├── users.yaml       (ro) ────────│ credenciales
+                          │  └── .env             (secret) ────│ GROQ_API_KEY
                           └────────────────────────────────────┘
 ```
 
