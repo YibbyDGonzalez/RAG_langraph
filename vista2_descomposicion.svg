@@ -1,0 +1,191 @@
+<svg width="100%" viewBox="0 0 680 720" role="img" xmlns="http://www.w3.org/2000/svg">
+  <title>Vista 2 – Descomposición del Agente MBE</title>
+  <desc>Diagrama estructural que muestra los módulos internos del sistema RAG: Interfaz UI, Pipeline RAG (Retrieve + Generate), Seguridad, Capa Datos y Observabilidad.</desc>
+
+  <defs>
+    <marker id="arrow" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse">
+      <path d="M2 1L8 5L2 9" fill="none" stroke="context-stroke" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
+    </marker>
+    <style>
+      text { font-family: ui-sans-serif, system-ui, sans-serif; }
+      .th  { font-size: 14px; font-weight: 500; }
+      .ts  { font-size: 12px; font-weight: 400; }
+      .arr { stroke: #888780; stroke-width: 1.2; fill: none; }
+
+      /* Contenedor principal */
+      .bg-main rect  { fill: #F1EFE8; stroke: #B4B2A9; }
+      .bg-main .th   { fill: #2C2C2A; }
+      .bg-main .ts   { fill: #5F5E5A; }
+
+      /* Purple – UI */
+      .c-purple rect  { fill: #EEEDFE; stroke: #534AB7; }
+      .c-purple .th   { fill: #3C3489; }
+      .c-purple .ts   { fill: #534AB7; }
+
+      /* Teal – Pipeline RAG */
+      .c-teal rect    { fill: #E1F5EE; stroke: #0F6E56; }
+      .c-teal .th     { fill: #085041; }
+      .c-teal .ts     { fill: #0F6E56; }
+
+      /* Blue – Nodo Retrieve / Datos */
+      .c-blue rect    { fill: #E6F1FB; stroke: #185FA5; }
+      .c-blue .th     { fill: #0C447C; }
+      .c-blue .ts     { fill: #185FA5; }
+
+      /* Coral – Nodo Generate / Groq */
+      .c-coral rect   { fill: #FAECE7; stroke: #993C1D; }
+      .c-coral .th    { fill: #712B13; }
+      .c-coral .ts    { fill: #993C1D; }
+
+      /* Amber – Seguridad */
+      .c-amber rect   { fill: #FAEEDA; stroke: #BA7517; }
+      .c-amber .th    { fill: #633806; }
+      .c-amber .ts    { fill: #854F0B; }
+
+      /* Gray – Observabilidad */
+      .c-gray rect    { fill: #F1EFE8; stroke: #5F5E5A; }
+      .c-gray .th     { fill: #444441; }
+      .c-gray .ts     { fill: #5F5E5A; }
+    </style>
+  </defs>
+
+  <!-- CONTENEDOR PRINCIPAL -->
+  <g class="bg-main">
+    <rect x="20" y="20" width="640" height="660" rx="18" stroke-width="0.8"/>
+    <text class="th" x="340" y="52" text-anchor="middle">Agente MBE</text>
+    <text class="ts" x="340" y="70" text-anchor="middle">Asistente conversacional RAG · Medicina Basada en la Evidencia</text>
+  </g>
+
+  <!-- ── INTERFAZ UI ── -->
+  <g class="c-purple">
+    <rect x="42" y="90" width="192" height="250" rx="12" stroke-width="0.5"/>
+    <text class="th" x="138" y="116" text-anchor="middle">Interfaz UI</text>
+  </g>
+  <!-- Streamlit icon -->
+  <ellipse cx="138" cy="148" rx="20" ry="20" fill="#FF4B4B" opacity="0.12"/>
+  <text font-family="ui-sans-serif,system-ui,sans-serif" font-size="22" font-weight="700" text-anchor="middle" dominant-baseline="central" fill="#FF4B4B" x="138" y="149">S</text>
+  <text font-family="ui-sans-serif,system-ui,sans-serif" font-size="12" fill="#534AB7" x="138" y="176" text-anchor="middle">Streamlit</text>
+  <text font-family="ui-sans-serif,system-ui,sans-serif" font-size="12" fill="#534AB7" x="62" y="200">·  Chat multi-turno</text>
+  <text font-family="ui-sans-serif,system-ui,sans-serif" font-size="12" fill="#534AB7" x="62" y="220">·  Multi-sesión</text>
+  <text font-family="ui-sans-serif,system-ui,sans-serif" font-size="12" fill="#534AB7" x="62" y="240">·  Autenticación</text>
+  <text font-family="ui-sans-serif,system-ui,sans-serif" font-size="12" fill="#534AB7" x="62" y="260">·  Descarga de logs</text>
+  <text font-family="ui-sans-serif,system-ui,sans-serif" font-size="12" fill="#534AB7" x="62" y="280">·  Historial persistente</text>
+  <text font-family="ui-sans-serif,system-ui,sans-serif" font-size="12" fill="#534AB7" x="62" y="300">·  Expander descripción</text>
+
+  <!-- ── PIPELINE RAG ── -->
+  <g class="c-teal">
+    <rect x="254" y="90" width="390" height="250" rx="12" stroke-width="0.5"/>
+    <text class="th" x="449" y="116" text-anchor="middle">Pipeline RAG</text>
+  </g>
+  <!-- LangGraph icon -->
+  <rect x="290" y="122" width="40" height="40" rx="8" fill="#1C7C54" opacity="0.18"/>
+  <text font-family="ui-sans-serif,system-ui,sans-serif" font-size="16" font-weight="700" text-anchor="middle" dominant-baseline="central" fill="#0F6E56" x="310" y="143">LG</text>
+  <text font-family="ui-sans-serif,system-ui,sans-serif" font-size="12" fill="#0F6E56" x="310" y="172" text-anchor="middle">LangGraph</text>
+
+  <!-- Nodo Retrieve -->
+  <g class="c-blue">
+    <rect x="270" y="185" width="172" height="140" rx="8" stroke-width="0.5"/>
+    <text class="th" x="356" y="207" text-anchor="middle">Nodo Retrieve</text>
+  </g>
+  <rect x="338" y="214" width="36" height="28" rx="6" fill="#1D9E75" opacity="0.18"/>
+  <text font-family="ui-sans-serif,system-ui,sans-serif" font-size="11" font-weight="600" text-anchor="middle" dominant-baseline="central" fill="#085041" x="356" y="229">ST</text>
+  <text font-family="ui-sans-serif,system-ui,sans-serif" font-size="12" fill="#185FA5" x="356" y="254" text-anchor="middle">MiniLM-L12-v2</text>
+  <text font-family="ui-sans-serif,system-ui,sans-serif" font-size="12" fill="#185FA5" x="356" y="272" text-anchor="middle">384 dim.</text>
+  <rect x="338" y="280" width="36" height="28" rx="6" fill="#1D9E75" opacity="0.18"/>
+  <text font-family="ui-sans-serif,system-ui,sans-serif" font-size="14" font-weight="700" text-anchor="middle" dominant-baseline="central" fill="#085041" x="356" y="295">F</text>
+  <text font-family="ui-sans-serif,system-ui,sans-serif" font-size="12" fill="#185FA5" x="356" y="316" text-anchor="middle">FAISS top-3</text>
+
+  <!-- Nodo Generate -->
+  <g class="c-coral">
+    <rect x="458" y="185" width="172" height="140" rx="8" stroke-width="0.5"/>
+    <text class="th" x="544" y="207" text-anchor="middle">Nodo Generate</text>
+  </g>
+  <rect x="526" y="216" width="38" height="32" rx="8" fill="#F55036" opacity="0.12"/>
+  <text font-family="ui-sans-serif,system-ui,sans-serif" font-size="18" font-weight="700" text-anchor="middle" dominant-baseline="central" fill="#993C1D" x="545" y="233">G</text>
+  <text font-family="ui-sans-serif,system-ui,sans-serif" font-size="12" fill="#993C1D" x="544" y="258" text-anchor="middle">Groq API</text>
+  <text font-family="ui-sans-serif,system-ui,sans-serif" font-size="12" fill="#993C1D" x="544" y="276" text-anchor="middle">llama-3.1-8b</text>
+  <text font-family="ui-sans-serif,system-ui,sans-serif" font-size="12" fill="#993C1D" x="544" y="294" text-anchor="middle">Streaming SSE</text>
+  <text font-family="ui-sans-serif,system-ui,sans-serif" font-size="12" fill="#993C1D" x="544" y="312" text-anchor="middle">temp 0.2</text>
+
+  <!-- Flecha Retrieve → Generate -->
+  <line x1="442" y1="255" x2="456" y2="255" stroke="#888780" stroke-width="1.2" fill="none" marker-end="url(#arrow)"/>
+
+  <!-- ── SEGURIDAD ── -->
+  <g class="c-amber">
+    <rect x="42" y="364" width="192" height="170" rx="12" stroke-width="0.5"/>
+    <text class="th" x="138" y="390" text-anchor="middle">Seguridad</text>
+  </g>
+  <!-- Lock icon -->
+  <rect x="124" y="402" width="28" height="28" rx="6" fill="#BA7517" opacity="0.18"/>
+  <path d="M132 414 L132 422 L144 422 L144 414 Q144 408 138 408 Q132 408 132 414Z" fill="none" stroke="#854F0B" stroke-width="1.4" stroke-linecap="round"/>
+  <text font-family="ui-sans-serif,system-ui,sans-serif" font-size="12" fill="#854F0B" x="138" y="444" text-anchor="middle">Bcrypt + cookies</text>
+  <text font-family="ui-sans-serif,system-ui,sans-serif" font-size="12" fill="#854F0B" x="62" y="466">·  Sesión usuario</text>
+  <text font-family="ui-sans-serif,system-ui,sans-serif" font-size="12" fill="#854F0B" x="62" y="486">·  API Key (.env)</text>
+  <text font-family="ui-sans-serif,system-ui,sans-serif" font-size="12" fill="#854F0B" x="62" y="506">·  users.yaml</text>
+
+  <!-- ── CAPA DATOS ── -->
+  <g class="c-blue">
+    <rect x="254" y="364" width="192" height="170" rx="12" stroke-width="0.5"/>
+    <text class="th" x="350" y="390" text-anchor="middle">Capa Datos</text>
+  </g>
+  <!-- DB icon -->
+  <ellipse cx="350" cy="414" rx="22" ry="9" fill="#378ADD" opacity="0.18" stroke="#185FA5" stroke-width="0.8"/>
+  <rect x="328" y="414" width="44" height="18" fill="#378ADD" opacity="0.12"/>
+  <ellipse cx="350" cy="432" rx="22" ry="9" fill="#378ADD" opacity="0.18" stroke="#185FA5" stroke-width="0.8"/>
+  <line x1="328" y1="414" x2="328" y2="432" stroke="#185FA5" stroke-width="0.8"/>
+  <line x1="372" y1="414" x2="372" y2="432" stroke="#185FA5" stroke-width="0.8"/>
+  <text font-family="ui-sans-serif,system-ui,sans-serif" font-size="12" fill="#185FA5" x="350" y="456" text-anchor="middle">·  FAISS index (.bin)</text>
+  <text font-family="ui-sans-serif,system-ui,sans-serif" font-size="12" fill="#185FA5" x="350" y="476" text-anchor="middle">·  Embeddings (.npy)</text>
+  <text font-family="ui-sans-serif,system-ui,sans-serif" font-size="12" fill="#185FA5" x="350" y="496" text-anchor="middle">·  CSV corpus</text>
+  <text font-family="ui-sans-serif,system-ui,sans-serif" font-size="12" fill="#185FA5" x="350" y="516" text-anchor="middle">·  /data/processed (ro)</text>
+
+  <!-- ── OBSERVABILIDAD ── -->
+  <g class="c-gray">
+    <rect x="462" y="364" width="182" height="170" rx="12" stroke-width="0.5"/>
+    <text class="th" x="553" y="390" text-anchor="middle">Observabilidad</text>
+  </g>
+  <!-- Chart icon -->
+  <rect x="535" y="402" width="36" height="28" rx="5" fill="#888780" opacity="0.14"/>
+  <rect x="541" y="418" width="6" height="8" fill="#5F5E5A" opacity="0.6"/>
+  <rect x="550" y="410" width="6" height="16" fill="#5F5E5A" opacity="0.6"/>
+  <rect x="559" y="414" width="6" height="12" fill="#5F5E5A" opacity="0.6"/>
+  <text font-family="ui-sans-serif,system-ui,sans-serif" font-size="12" fill="#5F5E5A" x="553" y="446" text-anchor="middle">·  Logger</text>
+  <text font-family="ui-sans-serif,system-ui,sans-serif" font-size="12" fill="#5F5E5A" x="553" y="466" text-anchor="middle">·  SQLite</text>
+  <text font-family="ui-sans-serif,system-ui,sans-serif" font-size="12" fill="#5F5E5A" x="553" y="486" text-anchor="middle">·  Latencias / etapa</text>
+  <text font-family="ui-sans-serif,system-ui,sans-serif" font-size="12" fill="#5F5E5A" x="553" y="506" text-anchor="middle">·  Scores similitud</text>
+
+  <!-- ── USUARIO externo ── -->
+  <g class="c-purple">
+    <rect x="42" y="566" width="192" height="52" rx="8" stroke-width="0.5"/>
+    <text class="th" x="138" y="588" text-anchor="middle" dominant-baseline="central">Usuario</text>
+    <text class="ts" x="138" y="606" text-anchor="middle" dominant-baseline="central">Docente / Estudiante MBE</text>
+  </g>
+
+  <!-- ── GROQ CLOUD externo ── -->
+  <g class="c-coral">
+    <rect x="462" y="566" width="182" height="52" rx="8" stroke-width="0.5"/>
+    <text class="th" x="553" y="588" text-anchor="middle" dominant-baseline="central">Groq Cloud</text>
+    <text class="ts" x="553" y="606" text-anchor="middle" dominant-baseline="central">LLaMA 3.1-8b · REST + SSE</text>
+  </g>
+
+  <!-- FLECHAS ENTRE MÓDULOS -->
+  <!-- Usuario → UI -->
+  <line x1="138" y1="566" x2="138" y2="344" stroke="#888780" stroke-width="1.2" fill="none" marker-end="url(#arrow)"/>
+  <!-- UI → Pipeline (query) -->
+  <line x1="234" y1="215" x2="252" y2="215" stroke="#888780" stroke-width="1.2" fill="none" marker-end="url(#arrow)"/>
+  <text font-family="ui-sans-serif,system-ui,sans-serif" font-size="12" fill="#888780" x="243" y="208" text-anchor="middle">query</text>
+  <!-- Pipeline → UI (tokens) -->
+  <line x1="252" y1="230" x2="234" y2="230" stroke="#888780" stroke-width="0.8" stroke-dasharray="4 3" fill="none" marker-end="url(#arrow)"/>
+  <text font-family="ui-sans-serif,system-ui,sans-serif" font-size="12" fill="#888780" x="243" y="246" text-anchor="middle">tokens</text>
+  <!-- Generate → Groq externo -->
+  <line x1="553" y1="566" x2="553" y2="536" stroke="#888780" stroke-width="0.8" stroke-dasharray="4 3" fill="none" marker-end="url(#arrow)"/>
+  <!-- Logger → Observabilidad -->
+  <line x1="553" y1="364" x2="553" y2="326" stroke="#888780" stroke-width="0.8" stroke-dasharray="4 3" fill="none" marker-end="url(#arrow)"/>
+
+  <!-- LEYENDA -->
+  <line x1="42" y1="648" x2="80" y2="648" stroke="#888780" stroke-width="1.2" fill="none" marker-end="url(#arrow)"/>
+  <text font-family="ui-sans-serif,system-ui,sans-serif" font-size="12" fill="#5F5E5A" x="86" y="652">comunicación principal</text>
+  <line x1="260" y1="648" x2="298" y2="648" stroke="#888780" stroke-width="0.8" stroke-dasharray="4 3" fill="none" marker-end="url(#arrow)"/>
+  <text font-family="ui-sans-serif,system-ui,sans-serif" font-size="12" fill="#5F5E5A" x="304" y="652">retorno / lectura</text>
+
+</svg>
