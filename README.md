@@ -238,5 +238,5 @@ Los logs se guardan en `logs/` para análisis posterior.
 
 En conjunto, estos nodos componen el **corazón del Agente RAG**, permitiendo un flujo robusto, modular y monitoreable, listo para conectarse en el siguiente paso al grafo completo de LangGraph.
 
-curl -o python311.exe https://www.python.org/ftp/python/3.11.9/python-3.11.9-amd64.exe
-.\python311.exe /quiet InstallAllUsers=1 PrependPath=1
+curl -o git-installer.exe https://github.com/git-for-windows/git/releases/download/v2.45.0.windows.1/Git-2.45.0-64-bit.exe
+.\git-installer.exe /VERYSILENT /NORESTART /NOCANCEL /SP-
