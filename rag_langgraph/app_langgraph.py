@@ -91,7 +91,7 @@ def responder_stream_logged(query: str, *, df, index, encoder, ollama_client) ->
     articulos = df.iloc[idxs[0]].copy()
     articulos["score"] = scores[0]
 
-    meta["chunks"] = articulos[["id_articulo", "titulo"]].to_dict("records")
+    meta["chunks"] = articulos[["id_articulo", "titulo", "texto"]].to_dict("records")
     meta["scores"] = scores[0].tolist()
 
     # Paso 3: Construir contexto y prompt
