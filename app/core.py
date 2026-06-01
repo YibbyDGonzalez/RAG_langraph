@@ -2,7 +2,7 @@ import os
 from dotenv import load_dotenv
 load_dotenv()
 from typing import Generator
-
+# Algo
 import faiss
 import numpy as np
 import pandas as pd
