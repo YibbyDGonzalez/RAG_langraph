@@ -10,9 +10,9 @@ DATA_RAW = Path("data/raw")
 DATA_PROCESSED = Path("data/processed")
 DATA_PROCESSED.mkdir(parents=True, exist_ok=True)
 
-CHUNK_SIZE = 400          # tamaño aproximado de chunk (en tokens aprox)
+CHUNK_SIZE = 200          # tamaño aproximado de chunk (en tokens aprox)
 CHUNK_OVERLAP = 0.2       # 20% de solapamiento
-MIN_CHARS = 200           # longitud mínima para aceptar un chunk
+MIN_CHARS = 100           # longitud mínima para aceptar un chunk
 
 
 # ========================================
