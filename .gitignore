@@ -1,8 +1,9 @@
-@"
 .claude/
 .langgraph_api/
 venv/
 .venv/
+env/
 .streamlit/secrets.toml
 *.env
-"@ | Set-Content .gitignore -Encoding UTF8
+__pycache__/
+*.pyc

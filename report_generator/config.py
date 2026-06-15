@@ -20,7 +20,7 @@ HDBSCAN_MIN_SAMPLES = 2
 MAX_EJEMPLOS_POR_TEMA = 3
 
 # Modelo de Groq usado para nombrar cada grupo temático
-GROQ_MODEL = "llama3-8b-8192"
+GROQ_MODEL = "llama-3.1-8b-instant"
 
 # Offset de zona horaria aplicado al timestamp leído de la DB.
 # SQLite CURRENT_TIMESTAMP guarda siempre en UTC.

@@ -14,7 +14,7 @@ from yaml.loader import SafeLoader
 
 from core import load_resources
 from rag_langgraph.app_langgraph import responder_stream_logged
-from logger import init_db, log_consulta
+from logger import init_db, log_consulta, load_user_sessions
 
 
 # ============================
@@ -103,8 +103,13 @@ def crear_chat():
     st.session_state.active_chat = chat_id
 
 if "chats" not in st.session_state:
-    st.session_state.chats = {}
-    crear_chat()
+    historial = load_user_sessions(username)
+    if historial:
+        st.session_state.chats = historial
+        st.session_state.active_chat = list(historial.keys())[-1]
+    else:
+        st.session_state.chats = {}
+        crear_chat()
 
 if "active_chat" not in st.session_state or \
    st.session_state.active_chat not in st.session_state.chats:

@@ -35,6 +35,38 @@ def init_db():
     conn.close()
 
 
+def load_user_sessions(usuario: str) -> dict:
+    """
+    Recupera el historial de conversaciones de un usuario desde la DB.
+    Retorna un dict {session_id: {"title": str, "messages": [...]}}
+    ordenado por primera actividad (más antigua primero) para que el
+    sidebar, que itera en reversa, muestre la más reciente arriba.
+    """
+    try:
+        conn = sqlite3.connect(DB_PATH, check_same_thread=False)
+        rows = conn.execute(
+            """SELECT session_id, pregunta, respuesta
+               FROM consultas
+               WHERE usuario = ?
+               ORDER BY timestamp ASC""",
+            (usuario,),
+        ).fetchall()
+        conn.close()
+    except Exception as e:
+        print(f"[logger] Error al cargar historial: {e}")
+        return {}
+
+    sessions = {}
+    for session_id, pregunta, respuesta in rows:
+        if session_id not in sessions:
+            title = pregunta[:45] + "..." if len(pregunta) > 45 else pregunta
+            sessions[session_id] = {"title": title, "messages": []}
+        sessions[session_id]["messages"].append({"role": "user",      "content": pregunta})
+        sessions[session_id]["messages"].append({"role": "assistant", "content": respuesta})
+
+    return sessions
+
+
 def log_consulta(
     usuario: str,
     session_id: str,

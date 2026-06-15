@@ -38,6 +38,7 @@ print('Modelo de embeddings descargado correctamente.')"
 COPY app/ ./app/
 COPY rag_langgraph/ ./rag_langgraph/
 COPY src/ ./src/
+COPY report_generator/ ./report_generator/
 
 EXPOSE 8501
 

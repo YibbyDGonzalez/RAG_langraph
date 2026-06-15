@@ -1,4 +1,6 @@
+import json
 import math
+import re
 import sys
 import os
 
@@ -29,6 +31,16 @@ def compute_topics(preguntas: list, groq_api_key: str) -> list:
     Retorna lista de dicts ordenada de mayor a menor grupo:
       [{"nombre": str, "n_preguntas": int, "pct": float, "ejemplos": list[str]}]
     """
+    # Deduplicar preservando orden
+    seen = set()
+    preguntas_unicas = []
+    for p in preguntas:
+        p_norm = p.strip()
+        if p_norm and p_norm not in seen:
+            seen.add(p_norm)
+            preguntas_unicas.append(p_norm)
+    preguntas = preguntas_unicas
+
     if len(preguntas) < 5:
         return []
 
@@ -72,12 +84,23 @@ def compute_topics(preguntas: list, groq_api_key: str) -> list:
     # ── 4. Construir grupos y nombrarlos con Groq ────────────────────────────
     groq_client = Groq(api_key=groq_api_key)
     temas = []
+    labels_validos = sorted(set(labels) - {-1})
 
-    for label in sorted(set(labels) - {-1}):
+    # Recopilar preguntas representativas de cada cluster
+    clusters_para_llm = [
+        (label, [preguntas[i] for i in np.where(labels == label)[0]][:8])
+        for label in labels_validos
+    ]
+
+    # Una sola llamada al LLM con todos los clusters en contexto
+    print(f"    Nombrando {len(clusters_para_llm)} grupos en una sola llamada a Groq...")
+    nombres_map = _nombrar_clusters(clusters_para_llm, groq_client)
+
+    # Construir temas con el nombre asignado (o fallback "Tema N")
+    for label in labels_validos:
         indices = np.where(labels == label)[0]
         cluster_qs = [preguntas[i] for i in indices]
-        print(f"    Nombrando grupo {label + 1}/{len(set(labels) - {-1})} ({len(cluster_qs)} preguntas)...")
-        nombre = _nombre_cluster(cluster_qs[:8], groq_client)
+        nombre = nombres_map.get(label) or f"Tema {label + 1}"
         temas.append({
             "nombre": nombre,
             "n_preguntas": len(cluster_qs),
@@ -105,24 +128,46 @@ def compute_topics(preguntas: list, groq_api_key: str) -> list:
     return temas
 
 
-def _nombre_cluster(ejemplos: list, groq_client: Groq) -> str:
-    """Pide a Groq un nombre corto (≤5 palabras) para el grupo."""
-    lista = "\n".join(f"- {q}" for q in ejemplos)
+def _nombrar_clusters(clusters: list, groq_client: Groq) -> dict:
+    """
+    Una sola llamada al LLM con todos los clusters en contexto para que
+    genere títulos diferenciados entre sí.
+
+    clusters: [(id, [preguntas...]), ...]
+    Retorna: {id: titulo}
+    """
+    bloques = []
+    for cid, preguntas in clusters:
+        lista = "\n".join(f"  - {p}" for p in preguntas)
+        bloques.append(f"Grupo {cid}:\n{lista}")
+
     prompt = (
-        "Analiza estas preguntas de estudiantes de medicina sobre Medicina Basada en la Evidencia:\n\n"
-        f"{lista}\n\n"
-        "Genera un nombre descriptivo MUY CORTO (máximo 5 palabras) en español "
-        "que capture el tema central del grupo.\n"
-        "Responde SOLO con el nombre, sin explicaciones, sin comillas, sin puntuación final."
+        "Eres un asistente académico. A continuación se presentan los grupos de preguntas "
+        "formuladas por estudiantes de medicina.\n"
+        "El dominio completo es 'Medicina Basada en la Evidencia', por lo que ese término "
+        "tiene PROHIBIDO aparecer como nombre de ningún grupo.\n\n"
+        "Tu tarea: asigna a CADA grupo un título corto en español (máximo 4 palabras) "
+        "que capture el SUBTEMA ESPECÍFICO que distingue ese grupo de los demás. "
+        "NO reorganices las preguntas entre grupos; los grupos son fijos, solo ponles nombre.\n\n"
+        "Devuelve ÚNICAMENTE un JSON sin texto adicional ni bloques de markdown:\n"
+        '[{"id": 0, "titulo": "..."}, {"id": 1, "titulo": "..."}, ...]\n\n'
+        + "\n\n".join(bloques)
     )
     try:
         resp = groq_client.chat.completions.create(
             model=config.GROQ_MODEL,
             messages=[{"role": "user", "content": prompt}],
-            max_tokens=20,
+            max_tokens=300,
             temperature=0.3,
         )
-        return resp.choices[0].message.content.strip()
+        raw = resp.choices[0].message.content.strip()
+        raw = re.sub(r"```(?:json)?\s*|\s*```", "", raw).strip()
+        data = json.loads(raw)
+        return {
+            int(item["id"]): str(item.get("titulo", "")).strip().capitalize()
+            for item in data
+            if str(item.get("titulo", "")).strip()
+        }
     except Exception as e:
-        print(f"    Advertencia al nombrar grupo: {e}")
-        return f"Grupo de {len(ejemplos)} preguntas"
+        print(f"    Advertencia al nombrar clusters: {e}")
+        return {}
