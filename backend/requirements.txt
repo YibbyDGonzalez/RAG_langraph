@@ -1,0 +1,6 @@
+# Reutiliza las dependencias del RAG (FAISS, sentence-transformers, Groq,
+# langgraph) que ya usa streamlit_app/, sin duplicarlas.
+-r ../streamlit_app/requirements.txt
+
+fastapi>=0.110.0
+uvicorn[standard]>=0.29.0

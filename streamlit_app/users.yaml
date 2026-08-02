@@ -1,0 +1,49 @@
+﻿credentials:
+  usernames:
+    Docente1:
+      email: docente1@javeriana.edu.co
+      name: Docente 1
+      password: $2b$12$7rcaMvYQMsx/6HKDwBSUSO4Wvg0pkMIk4XgTtmMzH9S889NZMyNym
+    Docente2:
+      email: docente2@javeriana.edu.co
+      name: Docente 2
+      password: $2b$12$LHAAfpQE5gsrKQkTVl.m/.mRgHGXowhRMmprQtQCdWwSTt/tddmyC
+    Docente3:
+      email: docente3@javeriana.edu.co
+      name: Docente 3
+      password: $2b$12$xH3TpklpH595RIYCfy8D/.VcwNteO6nBJa3XNtKkSpZMJQzaG5ebq
+    Docente4:
+      email: docente4@javeriana.edu.co
+      name: Docente 4
+      password: $2b$12$gKBW/x5tDjn1esPOTX5iCOqyaM8zN/CG7NpDNypVnR4wpFzxyOvSy
+    Docente5:
+      email: docente5@javeriana.edu.co
+      name: Docente 5
+      password: $2b$12$94a72bulbjgderODfD7QEuZ14Q8jmLUaw20hM4T9zz9qXRxbceZ..
+    Docente6:
+      email: docente6@javeriana.edu.co
+      name: Docente 6
+      password: $2b$12$l4r/9Qvj8ZuSpkYxiNCEtOdU6tuskMZeENFjcALaA1T7peypJzUVG
+    Docente7:
+      email: docente7@javeriana.edu.co
+      name: Docente 7
+      password: $2b$12$ztAi8m4g03TdQrD/gdzpp.uYnno7/f6gI3Wv.Q6YfuLCjyXyaE9Ve
+    Docente8:
+      email: docente8@javeriana.edu.co
+      name: Docente 8
+      password: $2b$12$nuWiuEUF43zV4I24HPjA1emKLgUj.Lzdja.A3WiLQ8w/XksIDCyRG
+    Estudiante1:
+      email: estudiante1@javeriana.edu.co
+      name: Estudiante 1
+      password: $2b$12$Kv4Bxf4ZUmdDyd7gk.w0IOGwro0AeppOzvHkGxW2aewXkeFY091r.
+    Estudiante2:
+      email: estudiante2@javeriana.edu.co
+      name: Estudiante 2
+      password: $2b$12$u4GT2CAvVaQdgWFlrn55/OuX1hcDlCfW8Ra63vWdvw3eXq9szrobm
+preauthorized:
+  emails:
+    - ''
+cookie:
+  expiry_days: 1
+  key: mbe_javeriana_2025_secret
+  name: mbe_auth_cookie

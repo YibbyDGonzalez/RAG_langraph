@@ -4,7 +4,7 @@
 Sistema conversacional de **Recuperación Aumentada con Generación (RAG)** especializado en Medicina Basada en la Evidencia, diseñado para que estudiantes y profesionales de la salud puedan consultar artículos científicos en lenguaje natural y recibir respuestas fundamentadas, precisas y sin alucinaciones.
 
 > **Autores:** Yibby González · Juan Ruiz  
-> **Profesores:** Juan Pablo Páramo · Fabián Gil
+> **Profesores:** Juan Pablo Pájaro · Fabián Gil
 
 ---
 

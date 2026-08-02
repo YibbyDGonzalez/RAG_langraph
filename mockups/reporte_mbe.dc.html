@@ -1,0 +1,774 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+  <style>
+    body { margin: 0; background: oklch(99% 0.002 250); font-family: 'Inter', system-ui, sans-serif; }
+    a { color: oklch(32% 0.07 250); }
+    a:hover { color: oklch(52% 0.09 170); }
+    @keyframes spin { to { transform: rotate(360deg); } }
+  </style>
+</helmet>
+<div style="display:flex; min-height:100vh; width:100%; color:oklch(20% 0.01 250); background:oklch(99% 0.002 250)">
+
+  <!-- Sidebar: reusable across niveles -->
+  <aside style="width:280px; min-width:280px; background:oklch(97% 0.005 250); border-right:1px solid oklch(90% 0.005 250); display:flex; flex-direction:column; padding:28px 22px; gap:32px">
+    <div style="display:flex; align-items:center; gap:12px">
+      <div style="width:40px; height:40px; border-radius:8px; background:oklch(32% 0.07 250); color:oklch(99% 0.002 250); display:flex; align-items:center; justify-content:center; font-size:10px; font-weight:600; text-align:center; line-height:1.1; font-family:monospace">PUJ</div>
+      <div>
+        <div style="font-size:13px; font-weight:600; color:oklch(20% 0.01 250)">Asistente MBE</div>
+        <div style="font-size:12px; color:oklch(45% 0.01 250)">Reporte docente</div>
+      </div>
+    </div>
+
+    <div style="display:flex; flex-direction:column; gap:8px; padding:14px; background:oklch(99% 0.002 250); border:1px solid oklch(90% 0.005 250); border-radius:10px">
+      <div style="font-size:11px; font-weight:600; letter-spacing:0.04em; text-transform:uppercase; color:oklch(60% 0.01 250)">Docente</div>
+      <div style="font-size:14px; font-weight:600">{{ teacherName }}</div>
+      <a href="#" onClick="{{ onLogout }}" style="font-size:13px; font-weight:500; color:oklch(45% 0.01 250)">Cerrar sesión</a>
+    </div>
+
+    <div style="display:flex; flex-direction:column; gap:10px">
+      <div style="font-size:11px; font-weight:600; letter-spacing:0.04em; text-transform:uppercase; color:oklch(60% 0.01 250)">Período</div>
+      <div style="display:flex; flex-direction:column; gap:8px">
+        <label style="display:flex; flex-direction:column; gap:4px; font-size:12px; color:oklch(45% 0.01 250)">
+          Desde
+          <input type="date" value="{{ dateFrom }}" onChange="{{ onDateFromChange }}" style="border:1px solid oklch(90% 0.005 250); border-radius:8px; padding:8px 10px; font-size:13px; font-family:inherit; color:oklch(20% 0.01 250); background:oklch(99% 0.002 250)"></input>
+        </label>
+        <label style="display:flex; flex-direction:column; gap:4px; font-size:12px; color:oklch(45% 0.01 250)">
+          Hasta
+          <input type="date" value="{{ dateTo }}" onChange="{{ onDateToChange }}" style="border:1px solid oklch(90% 0.005 250); border-radius:8px; padding:8px 10px; font-size:13px; font-family:inherit; color:oklch(20% 0.01 250); background:oklch(99% 0.002 250)"></input>
+        </label>
+      </div>
+    </div>
+
+    <div style="display:flex; flex-direction:column; gap:10px">
+      <div style="font-size:11px; font-weight:600; letter-spacing:0.04em; text-transform:uppercase; color:oklch(60% 0.01 250)">Quién pregunta</div>
+      <div style="display:flex; flex-direction:column; gap:6px; background:oklch(99% 0.002 250); border:1px solid oklch(90% 0.005 250); border-radius:10px; padding:4px">
+        <sc-for list="{{ roleOptions }}" as="opt" hint-placeholder-count="3">
+          <button onClick="{{ opt.onSelect }}" style="{{ opt.style }}">{{ opt.label }}</button>
+        </sc-for>
+      </div>
+    </div>
+
+    <div style="margin-top:auto; font-size:11px; color:oklch(60% 0.01 250); line-height:1.5">
+      Vistas agregadas (Niveles 1–3). No incluyen identificación individual salvo tutoría explícita.
+    </div>
+  </aside>
+
+  <!-- Main area -->
+  <main style="flex:1; padding:40px 48px; display:flex; flex-direction:column; gap:28px; max-width:1280px">
+
+    <!-- ===== Nivel 4 — Estudiante individual (no es tab) ===== -->
+    <sc-if value="{{ isStudentDetail }}" hint-placeholder-val="{{ false }}">
+      <div style="display:flex; flex-direction:column; gap:22px">
+        <div style="background:oklch(95% 0.03 70); border-radius:10px; padding:12px 18px; font-size:13px; color:oklch(35% 0.08 60); font-weight:500">
+          Vista individual — uso exclusivo para tutoría docente
+        </div>
+        <button onClick="{{ onBackToStudents }}" style="align-self:flex-start; background:none; border:none; font-size:14px; font-weight:600; color:oklch(32% 0.07 250); cursor:pointer; padding:0">← Volver a Estudiantes</button>
+
+        <div>
+          <div style="font-size:13px; font-weight:600; color:oklch(45% 0.01 250); text-transform:uppercase; letter-spacing:0.04em">Estudiante</div>
+          <div style="font-size:26px; font-weight:600; margin-top:4px">{{ detail.name }}</div>
+        </div>
+
+        <div style="display:grid; grid-template-columns:repeat(3, 1fr); gap:18px">
+          <div style="background:oklch(99% 0.002 250); border:1px solid oklch(90% 0.005 250); border-radius:14px; padding:20px 22px">
+            <div style="font-size:12px; color:oklch(60% 0.01 250)">Total de preguntas <span style="font-size:10px">(histórico)</span></div>
+            <div style="font-size:32px; font-weight:600; margin-top:4px">{{ detail.totalPreguntas }}</div>
+          </div>
+          <div style="background:oklch(99% 0.002 250); border:1px solid oklch(90% 0.005 250); border-radius:14px; padding:20px 22px">
+            <div style="font-size:12px; color:oklch(60% 0.01 250)">Total de sesiones <span style="font-size:10px">(histórico)</span></div>
+            <div style="font-size:32px; font-weight:600; margin-top:4px">{{ detail.totalSesiones }}</div>
+          </div>
+          <div style="background:oklch(99% 0.002 250); border:1px solid oklch(90% 0.005 250); border-radius:14px; padding:20px 22px">
+            <div style="font-size:12px; color:oklch(60% 0.01 250)">Última actividad</div>
+            <div style="font-size:32px; font-weight:600; margin-top:4px">{{ detail.lastActivity }}</div>
+          </div>
+        </div>
+
+        <div style="background:oklch(99% 0.002 250); border:1px solid oklch(90% 0.005 250); border-radius:14px; padding:24px 26px">
+          <div style="font-size:16px; font-weight:600; margin-bottom:14px">Actividad diaria — histórico completo</div>
+          <svg viewBox="0 0 560 80" style="width:100%; height:80px">
+            <polyline points="{{ detail.sparklinePoints }}" fill="none" stroke="oklch(32% 0.07 250)" stroke-width="2"></polyline>
+          </svg>
+        </div>
+
+        <div style="background:oklch(99% 0.002 250); border:1px solid oklch(90% 0.005 250); border-radius:14px; padding:24px 26px">
+          <div style="font-size:16px; font-weight:600; margin-bottom:14px">Últimas preguntas</div>
+          <div style="display:flex; flex-direction:column; gap:10px">
+            <sc-for list="{{ detail.ultimasPreguntas }}" as="q" hint-placeholder-count="4">
+              <div style="background:oklch(97% 0.005 250); border-radius:10px; padding:12px 16px; display:flex; justify-content:space-between; gap:16px">
+                <span style="font-size:13px; color:oklch(20% 0.01 250)">"{{ q.text }}"</span>
+                <span style="font-size:12px; color:oklch(60% 0.01 250); white-space:nowrap">{{ q.date }}</span>
+              </div>
+            </sc-for>
+          </div>
+        </div>
+
+        <div style="background:oklch(99% 0.002 250); border:1px solid oklch(90% 0.005 250); border-radius:14px; padding:24px 26px">
+          <div style="font-size:16px; font-weight:600; margin-bottom:14px">Perfil temático</div>
+          <div style="display:flex; gap:8px; flex-wrap:wrap">
+            <sc-for list="{{ detail.temasPerfil }}" as="tp" hint-placeholder-count="5">
+              <span style="{{ tp.style }}">{{ tp.name }}</span>
+            </sc-for>
+          </div>
+        </div>
+      </div>
+    </sc-if>
+
+    <sc-if value="{{ isTabsView }}" hint-placeholder-val="{{ true }}">
+    <div style="display:flex; flex-direction:column; gap:18px">
+      <div>
+        <div style="font-size:13px; font-weight:600; color:oklch(45% 0.01 250); text-transform:uppercase; letter-spacing:0.04em">Reporte de uso</div>
+        <div style="font-size:26px; font-weight:600; color:oklch(20% 0.01 250); margin-top:4px">{{ viewTitle }}</div>
+      </div>
+
+      <div style="display:flex; gap:4px; border-bottom:1px solid oklch(90% 0.005 250)">
+        <sc-for list="{{ tabs }}" as="tab" hint-placeholder-count="3">
+          <button onClick="{{ tab.onSelect }}" style="{{ tab.style }}">{{ tab.label }}</button>
+        </sc-for>
+      </div>
+    </div>
+
+    <!-- ===== Pulso (Nivel 1) ===== -->
+    <sc-if value="{{ isPulso }}" hint-placeholder-val="{{ true }}">
+      <div style="display:flex; flex-direction:column; gap:28px">
+
+        <!-- KPI grid -->
+        <div style="display:grid; grid-template-columns:repeat(3, 1fr); gap:18px">
+          <sc-for list="{{ kpis }}" as="k" hint-placeholder-count="6">
+            <div style="background:oklch(99% 0.002 250); border:1px solid oklch(90% 0.005 250); border-radius:14px; padding:22px 24px; display:flex; flex-direction:column; gap:6px">
+              <div style="font-size:13px; font-weight:500; color:oklch(45% 0.01 250)">{{ k.label }}</div>
+              <div style="font-size:40px; font-weight:600; color:oklch(20% 0.01 250); letter-spacing:-0.02em; line-height:1.1">{{ k.value }}</div>
+              <div style="{{ k.deltaStyle }}">{{ k.deltaText }}</div>
+            </div>
+          </sc-for>
+        </div>
+
+        <!-- Alerts -->
+        <div style="display:flex; flex-direction:column; gap:12px">
+          <div style="font-size:16px; font-weight:600">Qué necesita tu atención</div>
+          <sc-if value="{{ hasAlerts }}" hint-placeholder-val="{{ true }}">
+            <div style="display:flex; flex-direction:column; gap:10px">
+              <sc-for list="{{ alerts }}" as="a" hint-placeholder-count="3">
+                <div style="display:flex; align-items:flex-start; gap:14px; background:oklch(99% 0.002 250); border:1px solid oklch(90% 0.005 250); border-left:3px solid {{ a.accentColor }}; border-radius:10px; padding:16px 18px">
+                  <div style="{{ a.iconWrapStyle }}">{{ a.iconLetter }}</div>
+                  <div style="flex:1; display:flex; flex-direction:column; gap:3px">
+                    <div style="font-size:14px; font-weight:600">{{ a.title }}</div>
+                    <div style="font-size:13px; color:oklch(45% 0.01 250); line-height:1.5">{{ a.desc }}</div>
+                  </div>
+                  <button onClick="{{ a.onSeeMore }}" style="white-space:nowrap; font-size:13px; font-weight:600; color:oklch(32% 0.07 250); background:none; border:none; cursor:pointer; padding:6px 4px">Ver más →</button>
+                </div>
+              </sc-for>
+            </div>
+          </sc-if>
+          <sc-if value="{{ noAlerts }}" hint-placeholder-val="{{ false }}">
+            <div style="background:oklch(94% 0.03 170); border-radius:10px; padding:18px 20px; font-size:14px; color:oklch(32% 0.07 250)">Todo en orden esta semana.</div>
+          </sc-if>
+          <div style="font-size:12px; color:oklch(60% 0.01 250)">Análisis de temas no generado para este período — algunas alertas de contenido pueden no estar disponibles todavía.</div>
+        </div>
+
+        <!-- Weekly activity chart -->
+        <div style="background:oklch(99% 0.002 250); border:1px solid oklch(90% 0.005 250); border-radius:14px; padding:24px 26px">
+          <div style="display:flex; align-items:baseline; justify-content:space-between; margin-bottom:20px">
+            <div>
+              <div style="font-size:16px; font-weight:600">Actividad — últimas 4 semanas</div>
+              <div style="font-size:12px; color:oklch(60% 0.01 250); margin-top:2px">Preguntas por semana, independiente del período elegido</div>
+            </div>
+            <div style="font-size:13px; font-weight:600; color:oklch(52% 0.09 170)">{{ weekly.deltaLabel }}</div>
+          </div>
+          <div style="position:relative; height:180px; display:flex; align-items:flex-end; gap:20px; padding-right:56px">
+            <div style="position:absolute; left:0; right:56px; border-top:1.5px dashed oklch(70% 0.01 250); top:{{ weekly.avgLineTop }}"></div>
+            <div style="position:absolute; right:0; top:{{ weekly.avgLineTop }}; transform:translateY(-50%); font-size:11px; color:oklch(60% 0.01 250)">prom. {{ weekly.avg }}</div>
+            <sc-for list="{{ weekly.weeks }}" as="w" hint-placeholder-count="4">
+              <div style="flex:1; display:flex; flex-direction:column; align-items:center; gap:8px; height:100%; justify-content:flex-end">
+                <div style="font-size:12px; font-weight:600; color:oklch(20% 0.01 250)">{{ w.value }}</div>
+                <div style="width:100%; max-width:48px; height:{{ w.heightPct }}; background:oklch(32% 0.07 250); border-radius:6px 6px 0 0"></div>
+                <div style="font-size:11px; color:oklch(60% 0.01 250)">{{ w.label }}</div>
+              </div>
+            </sc-for>
+          </div>
+        </div>
+
+        <!-- Day distribution + heatmap -->
+        <div style="display:grid; grid-template-columns:1.3fr 1fr; gap:18px; align-items:start">
+          <div style="background:oklch(99% 0.002 250); border:1px solid oklch(90% 0.005 250); border-radius:14px; padding:24px 26px">
+            <div style="font-size:16px; font-weight:600; margin-bottom:18px">Preguntas por día de la semana</div>
+            <div style="display:flex; align-items:flex-end; gap:12px; height:130px">
+              <sc-for list="{{ dayDist }}" as="d" hint-placeholder-count="7">
+                <div style="flex:1; display:flex; flex-direction:column; align-items:center; gap:6px; height:100%; justify-content:flex-end">
+                  <div style="width:100%; max-width:32px; height:{{ d.heightPct }}; background:oklch(94% 0.02 250); border-radius:5px 5px 0 0"></div>
+                  <div style="font-size:11px; color:oklch(60% 0.01 250)">{{ d.day }}</div>
+                </div>
+              </sc-for>
+            </div>
+            <button onClick="{{ onToggleDetail }}" style="margin-top:16px; background:none; border:none; padding:0; font-size:13px; font-weight:600; color:oklch(32% 0.07 250); cursor:pointer">{{ detailToggleLabel }}</button>
+            <sc-if value="{{ showDetail }}" hint-placeholder-val="{{ false }}">
+              <div style="margin-top:14px; padding-top:14px; border-top:1px solid oklch(90% 0.005 250); display:flex; flex-direction:column; gap:8px; font-size:13px; color:oklch(45% 0.01 250)">
+                <div>Duración promedio de sesión: <strong style="color:oklch(20% 0.01 250)">{{ detailAvgDuration }}</strong></div>
+                <div>Concentración en los 2 días más activos: <strong style="color:oklch(20% 0.01 250)">{{ detailConcentration }}</strong></div>
+                <sc-if value="{{ detailWarning }}" hint-placeholder-val="{{ false }}">
+                  <div style="color:oklch(62% 0.13 70); font-weight:500">Uso muy concentrado en pocos días.</div>
+                </sc-if>
+              </div>
+            </sc-if>
+          </div>
+
+          <div style="background:oklch(99% 0.002 250); border:1px solid oklch(90% 0.005 250); border-radius:14px; padding:24px 26px">
+            <div style="display:flex; align-items:center; justify-content:space-between; margin-bottom:14px">
+              <div style="font-size:16px; font-weight:600">Mapa de calor — día × franja</div>
+              <button onClick="{{ onToggleHeatmap }}" style="background:none; border:none; font-size:12px; font-weight:600; color:oklch(45% 0.01 250); cursor:pointer">{{ heatmapToggleLabel }}</button>
+            </div>
+            <sc-if value="{{ showHeatmap }}" hint-placeholder-val="{{ true }}">
+              <div style="display:flex; flex-direction:column; gap:4px">
+                <sc-for list="{{ heatmapRows }}" as="row" hint-placeholder-count="7">
+                  <div style="display:flex; align-items:center; gap:6px">
+                    <div style="width:26px; font-size:10px; color:oklch(60% 0.01 250)">{{ row.day }}</div>
+                    <div style="display:flex; gap:4px; flex:1">
+                      <sc-for list="{{ row.cells }}" as="cell" hint-placeholder-count="4">
+                        <div style="flex:1; height:16px; border-radius:3px; background:{{ cell.color }}"></div>
+                      </sc-for>
+                    </div>
+                  </div>
+                </sc-for>
+                <div style="display:flex; gap:6px; margin-top:6px; padding-left:32px">
+                  <sc-for list="{{ heatmapLabels }}" as="lbl" hint-placeholder-count="4">
+                    <div style="flex:1; font-size:9px; color:oklch(60% 0.01 250); text-align:center">{{ lbl }}</div>
+                  </sc-for>
+                </div>
+              </div>
+            </sc-if>
+          </div>
+        </div>
+
+      </div>
+    </sc-if>
+
+    <!-- ===== Temas (Nivel 2) ===== -->
+    <sc-if value="{{ isTemas }}" hint-placeholder-val="{{ false }}">
+      <div style="display:flex; flex-direction:column; gap:22px">
+
+        <sc-if value="{{ topicFocusLabel }}" hint-placeholder-val="{{ false }}">
+          <div style="display:flex; align-items:center; justify-content:space-between; background:oklch(94% 0.02 250); border-radius:10px; padding:12px 18px; font-size:13px; color:oklch(32% 0.07 250)">
+            <span>Foco desde alerta: <strong>{{ topicFocusLabel }}</strong></span>
+            <button onClick="{{ onClearFocus }}" style="background:none; border:none; color:oklch(32% 0.07 250); font-weight:600; cursor:pointer; font-size:13px">Quitar foco ✕</button>
+          </div>
+        </sc-if>
+
+        <!-- Estado: no generado -->
+        <sc-if value="{{ isIdle }}" hint-placeholder-val="{{ false }}">
+          <div style="background:oklch(99% 0.002 250); border:1px solid oklch(90% 0.005 250); border-radius:14px; padding:48px; display:flex; flex-direction:column; align-items:center; text-align:center; gap:16px; max-width:640px; margin:0 auto">
+            <div style="font-size:18px; font-weight:600">Análisis de temas</div>
+            <div style="font-size:14px; color:oklch(45% 0.01 250); line-height:1.6">Agrupa automáticamente las preguntas del período por similitud de significado, les da nombre y muestra su evolución semana a semana. Puede tardar de 1 a 3 minutos.</div>
+            <button onClick="{{ onGenerate }}" style="margin-top:8px; padding:12px 28px; background:oklch(32% 0.07 250); color:oklch(99% 0.002 250); border:none; border-radius:9px; font-size:14px; font-weight:600; cursor:pointer">Generar análisis</button>
+          </div>
+        </sc-if>
+
+        <!-- Estado: generando -->
+        <sc-if value="{{ isGenerating }}" hint-placeholder-val="{{ false }}">
+          <div style="background:oklch(99% 0.002 250); border:1px solid oklch(90% 0.005 250); border-radius:14px; padding:48px; display:flex; flex-direction:column; align-items:center; text-align:center; gap:14px; max-width:640px; margin:0 auto">
+            <div style="width:36px; height:36px; border-radius:50%; border:3px solid oklch(90% 0.005 250); border-top-color:oklch(32% 0.07 250); animation:spin 0.9s linear infinite"></div>
+            <div style="font-size:15px; font-weight:600">{{ generatingPhase }}</div>
+            <div style="font-size:13px; color:oklch(60% 0.01 250)">Esto puede tardar hasta 3 minutos. Puedes seguir usando el resto del reporte mientras tanto.</div>
+          </div>
+        </sc-if>
+
+        <!-- Estado: generado -->
+        <sc-if value="{{ isGenerated }}" hint-placeholder-val="{{ false }}">
+          <div style="display:flex; flex-direction:column; gap:22px">
+            <div style="font-size:14px; color:oklch(45% 0.01 250)">{{ topicCount }} grupos temáticos identificados en el período seleccionado.</div>
+
+            <div style="background:oklch(99% 0.002 250); border:1px solid oklch(90% 0.005 250); border-radius:14px; padding:24px 26px">
+              <div style="font-size:16px; font-weight:600; margin-bottom:18px">Volumen por tema</div>
+              <div style="display:flex; flex-direction:column; gap:12px">
+                <sc-for list="{{ topics }}" as="t" hint-placeholder-count="5">
+                  <div style="display:flex; align-items:center; gap:12px">
+                    <div style="width:220px; font-size:13px; color:oklch(20% 0.01 250); flex-shrink:0">{{ t.name }}</div>
+                    <div style="flex:1; background:oklch(94% 0.02 250); border-radius:5px; height:22px; position:relative">
+                      <div style="height:100%; border-radius:5px; background:oklch(32% 0.07 250); width:{{ t.barPct }}"></div>
+                    </div>
+                    <div style="width:80px; text-align:right; font-size:12px; color:oklch(45% 0.01 250); flex-shrink:0">{{ t.count }} ({{ t.pct }})</div>
+                  </div>
+                </sc-for>
+              </div>
+            </div>
+
+            <div style="display:flex; flex-direction:column; gap:10px">
+              <sc-for list="{{ topics }}" as="t" hint-placeholder-count="5">
+                <div style="background:oklch(99% 0.002 250); border:1px solid oklch(90% 0.005 250); border-radius:12px; overflow:hidden">
+                  <button onClick="{{ t.onToggle }}" style="width:100%; display:flex; align-items:center; justify-content:space-between; padding:16px 18px; background:none; border:none; cursor:pointer; text-align:left">
+                    <div style="display:flex; align-items:center; gap:10px">
+                      <span style="font-size:14px; font-weight:600">{{ t.name }}</span>
+                      <span style="font-size:12px; color:oklch(60% 0.01 250)">{{ t.count }} preguntas · {{ t.pct }}</span>
+                    </div>
+                    <span style="font-size:13px; color:oklch(45% 0.01 250)">{{ t.toggleLabel }}</span>
+                  </button>
+                  <sc-if value="{{ t.expanded }}" hint-placeholder-val="{{ false }}">
+                    <div style="padding:0 18px 16px 18px; display:flex; flex-direction:column; gap:8px; border-top:1px solid oklch(90% 0.005 250); padding-top:12px">
+                      <sc-for list="{{ t.examples }}" as="ex" hint-placeholder-count="3">
+                        <div style="font-size:13px; color:oklch(45% 0.01 250); padding:8px 12px; background:oklch(97% 0.005 250); border-radius:8px">"{{ ex }}"</div>
+                      </sc-for>
+                    </div>
+                  </sc-if>
+                </div>
+              </sc-for>
+            </div>
+
+            <div style="background:oklch(99% 0.002 250); border:1px solid oklch(90% 0.005 250); border-radius:14px; padding:24px 26px">
+              <div style="font-size:16px; font-weight:600; margin-bottom:6px">Evolución semanal — top 3 temas</div>
+              <div style="font-size:12px; color:oklch(60% 0.01 250); margin-bottom:16px">Solo se muestran los temas de mayor volumen para no saturar</div>
+              <svg viewBox="0 0 560 160" style="width:100%; height:160px">
+                <sc-for list="{{ evolutionLines }}" as="line" hint-placeholder-count="3">
+                  <polyline points="{{ line.points }}" fill="none" stroke="{{ line.color }}" stroke-width="2.5"></polyline>
+                </sc-for>
+              </svg>
+              <div style="display:flex; gap:18px; margin-top:10px">
+                <sc-for list="{{ evolutionLines }}" as="line" hint-placeholder-count="3">
+                  <div style="display:flex; align-items:center; gap:6px; font-size:12px; color:oklch(45% 0.01 250)">
+                    <div style="width:10px; height:10px; border-radius:50%; background:{{ line.color }}"></div>
+                    {{ line.name }}
+                  </div>
+                </sc-for>
+              </div>
+            </div>
+          </div>
+        </sc-if>
+      </div>
+    </sc-if>
+
+    <!-- ===== Estudiantes (Nivel 3) ===== -->
+    <sc-if value="{{ isEstudiantesTab }}" hint-placeholder-val="{{ false }}">
+      <div style="display:flex; flex-direction:column; gap:22px">
+
+        <div style="background:oklch(99% 0.002 250); border:1px solid oklch(90% 0.005 250); border-radius:14px; padding:24px 26px">
+          <div style="font-size:16px; font-weight:600; margin-bottom:4px">Histograma de esfuerzo</div>
+          <div style="font-size:12px; color:oklch(60% 0.01 250); margin-bottom:18px">Estudiantes por rango de preguntas hechas en el período — la señal de equidad más importante</div>
+          <div style="display:flex; align-items:flex-end; gap:24px; height:140px">
+            <sc-for list="{{ effort }}" as="e" hint-placeholder-count="4">
+              <div style="flex:1; display:flex; flex-direction:column; align-items:center; gap:8px; height:100%; justify-content:flex-end">
+                <div style="font-size:14px; font-weight:600; color:oklch(20% 0.01 250)">{{ e.count }}</div>
+                <div style="width:100%; max-width:80px; height:{{ e.heightPct }}; background:{{ e.color }}; border-radius:6px 6px 0 0"></div>
+                <div style="font-size:12px; color:oklch(60% 0.01 250)">{{ e.label }}</div>
+              </div>
+            </sc-for>
+          </div>
+        </div>
+
+        <div style="display:grid; grid-template-columns:1fr 1fr; gap:18px">
+          <div style="background:oklch(99% 0.002 250); border:1px solid oklch(90% 0.005 250); border-radius:14px; padding:22px 24px">
+            <div style="font-size:15px; font-weight:600; margin-bottom:14px">Silenciosos <span style="font-weight:400; color:oklch(60% 0.01 250); font-size:12px">— histórico completo</span></div>
+            <sc-if value="{{ hasSilenciosos }}" hint-placeholder-val="{{ true }}">
+              <div style="display:flex; flex-direction:column; gap:10px">
+                <sc-for list="{{ silenciosos }}" as="p" hint-placeholder-count="3">
+                  <div style="display:flex; justify-content:space-between; font-size:13px">
+                    <span>{{ p.name }}</span>
+                    <span style="color:oklch(62% 0.13 70)">{{ p.days }} días</span>
+                  </div>
+                </sc-for>
+              </div>
+            </sc-if>
+            <sc-if value="{{ noSilenciosos }}" hint-placeholder-val="{{ false }}">
+              <div style="font-size:13px; color:oklch(52% 0.09 170)">Todos los estudiantes han tenido actividad reciente.</div>
+            </sc-if>
+          </div>
+
+          <div style="background:oklch(99% 0.002 250); border:1px solid oklch(90% 0.005 250); border-radius:14px; padding:22px 24px">
+            <div style="font-size:15px; font-weight:600; margin-bottom:14px">Nunca han usado la herramienta</div>
+            <sc-if value="{{ hasNuncaUsado }}" hint-placeholder-val="{{ true }}">
+              <div style="display:flex; flex-direction:column; gap:10px">
+                <sc-for list="{{ nuncaUsado }}" as="n" hint-placeholder-count="2">
+                  <div style="font-size:13px">{{ n }}</div>
+                </sc-for>
+              </div>
+            </sc-if>
+            <sc-if value="{{ noNuncaUsado }}" hint-placeholder-val="{{ false }}">
+              <div style="font-size:13px; color:oklch(52% 0.09 170)">Todo el curso ha usado la herramienta al menos una vez.</div>
+            </sc-if>
+          </div>
+        </div>
+
+        <div style="background:oklch(99% 0.002 250); border:1px solid oklch(90% 0.005 250); border-radius:14px; overflow:hidden">
+          <div style="padding:20px 24px; border-bottom:1px solid oklch(90% 0.005 250); display:flex; align-items:baseline; justify-content:space-between">
+            <div style="font-size:16px; font-weight:600">Roster del curso</div>
+            <div style="font-size:12px; color:oklch(60% 0.01 250)">Ordenado de menor a mayor uso</div>
+          </div>
+          <div style="display:grid; grid-template-columns:2fr 1fr 1fr 2.2fr 0.8fr; padding:12px 24px; font-size:11px; font-weight:600; text-transform:uppercase; letter-spacing:0.04em; color:oklch(60% 0.01 250)">
+            <div>Nombre</div><div>Preguntas</div><div>Sesiones</div><div>Últimos temas</div><div></div>
+          </div>
+          <sc-for list="{{ roster }}" as="st" hint-placeholder-count="10">
+            <div style="{{ st.rowStyle }}">
+              <div style="font-size:14px; font-weight:500">{{ st.name }}</div>
+              <div style="font-size:14px">{{ st.preguntas }}</div>
+              <div style="font-size:14px">{{ st.sesiones }}</div>
+              <div style="display:flex; gap:6px; flex-wrap:wrap">
+                <sc-for list="{{ st.temas }}" as="chip" hint-placeholder-count="2">
+                  <span style="font-size:11px; background:oklch(94% 0.02 250); color:oklch(32% 0.07 250); padding:3px 8px; border-radius:999px">{{ chip }}</span>
+                </sc-for>
+              </div>
+              <button onClick="{{ st.onView }}" style="justify-self:end; font-size:13px; font-weight:600; color:oklch(32% 0.07 250); background:none; border:1px solid oklch(90% 0.005 250); border-radius:7px; padding:6px 14px; cursor:pointer">Ver</button>
+            </div>
+          </sc-for>
+        </div>
+
+      </div>
+    </sc-if>
+
+    </div>
+    </sc-if>
+
+  </main>
+</div>
+
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props="{&quot;$preview&quot;: {&quot;width&quot;: 1440, &quot;height&quot;: 1000}, &quot;defaultShowHeatmap&quot;: {&quot;editor&quot;: &quot;boolean&quot;, &quot;default&quot;: true, &quot;tsType&quot;: &quot;boolean&quot;, &quot;section&quot;: &quot;Comportamiento&quot;}, &quot;defaultRoleFilter&quot;: {&quot;editor&quot;: &quot;enum&quot;, &quot;default&quot;: &quot;todos&quot;, &quot;options&quot;: [&quot;todos&quot;, &quot;docentes&quot;, &quot;estudiantes&quot;], &quot;tsType&quot;: &quot;string&quot;, &quot;section&quot;: &quot;Comportamiento&quot;}}">
+const NAVY = 'oklch(32% 0.07 250)';
+const TEAL = 'oklch(52% 0.09 170)';
+const AMBER = 'oklch(62% 0.13 70)';
+const RED = 'oklch(52% 0.14 25)';
+const TEXT_SEC = 'oklch(45% 0.01 250)';
+const TEXT_TERT = 'oklch(60% 0.01 250)';
+const BORDER = 'oklch(90% 0.005 250)';
+const WHITE = 'oklch(99% 0.002 250)';
+
+class Component extends DCLogic {
+  state = {
+    activeTab: 'pulso',
+    roleFilter: this.props.defaultRoleFilter || 'todos',
+    dateFrom: '2026-07-06',
+    dateTo: '2026-08-02',
+    showHeatmap: this.props.defaultShowHeatmap ?? true,
+    showDetail: false,
+    topicsState: 'idle',
+    generatingPhase: 'Agrupando preguntas por significado...',
+    topicFocusId: null,
+    expandedTopics: {},
+    selectedStudentId: null,
+  };
+
+  GENERATING_PHASES = [
+    'Agrupando preguntas por significado...',
+    'Nombrando cada grupo temático...',
+    'Calculando evolución semanal...',
+  ];
+
+  startGenerating() {
+    this.setState({ topicsState: 'generating', generatingPhase: this.GENERATING_PHASES[0] });
+    let i = 0;
+    this._phaseInterval = setInterval(() => {
+      i++;
+      if (i < this.GENERATING_PHASES.length) {
+        this.setState({ generatingPhase: this.GENERATING_PHASES[i] });
+      }
+    }, 900);
+    this._genTimeout = setTimeout(() => {
+      clearInterval(this._phaseInterval);
+      this.setState({ topicsState: 'generated' });
+    }, 2800);
+  }
+
+  componentWillUnmount() {
+    clearInterval(this._phaseInterval);
+    clearTimeout(this._genTimeout);
+  }
+
+  buildDetail(student, topicDefs) {
+    const seed = student.name.length;
+    const totalPreguntas = student.preguntas + seed % 6 + 4;
+    const totalSesiones = student.sesiones + Math.ceil(seed / 4);
+    const lastActivity = student.days === null ? 'Nunca' : (student.days === 0 ? 'Hoy' : `hace ${student.days} días`);
+    const sample = [
+      '¿Cómo interpreto un intervalo de confianza que cruza el uno?',
+      '¿Qué diferencia hay entre sensibilidad y especificidad?',
+      '¿Cómo calculo el NNT a partir del RRA?',
+      '¿Qué es un sesgo de confusión y cómo se controla?',
+      '¿Cuándo se usa un modelo de efectos aleatorios en un metaanálisis?',
+    ];
+    const ultimasPreguntas = sample.slice(0, 3 + (seed % 3)).map((text, i) => ({
+      text, date: `2026-0${7 - Math.floor(i / 2)}-${(20 - i * 3).toString().padStart(2, '0')}`,
+    }));
+    const days = Array.from({ length: 30 }, (_, i) => Math.max(0, Math.round(Math.sin((i + seed) / 3) * 3 + 3 + (i % 5 === 0 ? 2 : 0))));
+    const maxDay = Math.max(...days, 1);
+    const sparklinePoints = days.map((v, i) => {
+      const x = (i / (days.length - 1)) * 540 + 10;
+      const y = 70 - (v / maxDay) * 60;
+      return `${x},${y}`;
+    }).join(' ');
+    const temasPerfil = topicDefs.map(t => ({
+      name: t.name,
+      style: student.temas.some(alias => t.name.includes(alias) || alias.includes(t.name))
+        ? 'font-size:12px; background:oklch(94% 0.03 170); color:oklch(35% 0.09 170); padding:6px 12px; border-radius:999px; font-weight:500'
+        : 'font-size:12px; background:oklch(96% 0.003 250); color:oklch(65% 0.005 250); padding:6px 12px; border-radius:999px',
+    }));
+    return { name: student.name, totalPreguntas, totalSesiones, lastActivity, ultimasPreguntas, sparklinePoints, temasPerfil };
+  }
+
+  tabBtnStyle(active) {
+    return `padding:10px 16px; font-size:14px; font-weight:600; background:none; border:none; cursor:pointer; border-bottom:2px solid ${active ? NAVY : 'transparent'}; color:${active ? NAVY : TEXT_SEC}; margin-bottom:-1px`;
+  }
+
+  roleBtnStyle(active) {
+    return `padding:8px 10px; font-size:13px; font-weight:500; border:none; border-radius:7px; cursor:pointer; text-align:left; background:${active ? 'oklch(94% 0.02 250)' : 'none'}; color:${active ? NAVY : TEXT_SEC}`;
+  }
+
+  renderVals() {
+    const s = this.state;
+
+    const tabsDef = [
+      { id: 'pulso', label: 'Pulso' },
+      { id: 'temas', label: 'Temas' },
+      { id: 'estudiantes', label: 'Estudiantes' },
+    ];
+    const tabs = tabsDef.map(t => ({
+      label: t.label,
+      style: this.tabBtnStyle(s.activeTab === t.id),
+      onSelect: () => this.setState({ activeTab: t.id }),
+    }));
+
+    const roleDef = [
+      { id: 'todos', label: 'Todos' },
+      { id: 'docentes', label: 'Solo docentes' },
+      { id: 'estudiantes', label: 'Solo estudiantes' },
+    ];
+    const roleOptions = roleDef.map(r => ({
+      label: r.label,
+      style: this.roleBtnStyle(s.roleFilter === r.id),
+      onSelect: () => this.setState({ roleFilter: r.id }),
+    }));
+
+    const kpiDef = [
+      { label: 'Total de estudiantes', value: '32', delta: null, note: 'roster completo' },
+      { label: 'Estudiantes activos', value: '24', delta: 14, type: 'up' },
+      { label: 'Total de chats', value: '58', delta: 9, type: 'up' },
+      { label: 'Total de preguntas', value: '187', delta: 22, type: 'up' },
+      { label: 'Preguntas por estudiante', value: '5.8', delta: 7, type: 'up' },
+      { label: 'Tiempo prom. por sesión', value: '6m 40s', delta: -3, type: 'down' },
+    ];
+    const kpis = kpiDef.map(k => {
+      let deltaText, color;
+      if (k.delta === null) {
+        deltaText = k.note;
+        color = TEXT_TERT;
+      } else {
+        const up = k.delta >= 0;
+        const goodColor = k.type === 'down' && !up ? RED : (up ? TEAL : RED);
+        deltaText = `${up ? '+' : ''}${k.delta}% vs período anterior`;
+        color = up ? TEAL : RED;
+      }
+      return { label: k.label, value: k.value, deltaText, deltaStyle: `font-size:13px; font-weight:600; color:${color}` };
+    });
+
+    const alertDef = [
+      {
+        title: 'Tema en alza: Farmacocinética',
+        desc: 'Las preguntas sobre este tema subieron 65% esta semana frente a la anterior.',
+        severity: 'info', target: 'temas', topicId: 'farmacocinetica',
+      },
+      {
+        title: 'Baja calidad de respuesta: sesgos en revisiones sistemáticas',
+        desc: 'Es un tema frecuente pero el sistema no está encontrando buen contenido para responderlo.',
+        severity: 'attention', target: 'temas', topicId: 'sesgos',
+      },
+      {
+        title: '3 estudiantes sin actividad hace 2+ semanas',
+        desc: 'Nunca reactivaron el uso tras su primera sesión o llevan más de 14 días sin preguntar.',
+        severity: 'attention', target: 'estudiantes',
+      },
+    ];
+    const sevColor = { info: NAVY, attention: AMBER, positive: TEAL };
+    const alerts = alertDef.map(a => ({
+      title: a.title, desc: a.desc,
+      accentColor: sevColor[a.severity],
+      iconLetter: a.severity === 'info' ? 'i' : '!',
+      iconWrapStyle: `width:28px; height:28px; border-radius:8px; display:flex; align-items:center; justify-content:center; font-size:13px; font-weight:700; color:${sevColor[a.severity]}; background:${sevColor[a.severity]}1a; flex-shrink:0`,
+      onSeeMore: () => this.setState({ activeTab: a.target, topicFocusId: a.topicId || null }),
+    }));
+
+    const weekVals = [32, 41, 38, 52];
+    const maxWeek = Math.max(...weekVals);
+    const avg = weekVals.reduce((a, b) => a + b, 0) / weekVals.length;
+    const weeks = weekVals.map((v, i) => ({
+      label: `Sem ${i + 1}`, value: v,
+      heightPct: `${Math.round((v / maxWeek) * 100)}%`,
+    }));
+    const deltaLastVsPrev = Math.round(((weekVals[3] - weekVals[2]) / weekVals[2]) * 100);
+    const weekly = {
+      weeks, avg: avg.toFixed(1),
+      avgLineTop: `${100 - Math.round((avg / maxWeek) * 100)}%`,
+      deltaLabel: `${deltaLastVsPrev >= 0 ? '+' : ''}${deltaLastVsPrev}% vs semana anterior`,
+    };
+
+    const dayVals = [
+      ['Lun', 22], ['Mar', 30], ['Mié', 41], ['Jue', 35], ['Vie', 24], ['Sáb', 12], ['Dom', 8],
+    ];
+    const maxDay = Math.max(...dayVals.map(d => d[1]));
+    const dayDist = dayVals.map(([day, v]) => ({ day, heightPct: `${Math.round((v / maxDay) * 100)}%` }));
+
+    const heatmapLabels = ['Madrugada', 'Mañana', 'Tarde', 'Noche'];
+    const heatmapData = [
+      [0.05, 0.2, 0.5, 0.15],
+      [0.05, 0.35, 0.6, 0.2],
+      [0.1, 0.4, 0.75, 0.3],
+      [0.05, 0.3, 0.65, 0.25],
+      [0.05, 0.25, 0.55, 0.4],
+      [0.02, 0.1, 0.3, 0.6],
+      [0.02, 0.05, 0.15, 0.35],
+    ];
+    const dayLabels = ['Lun', 'Mar', 'Mié', 'Jue', 'Vie', 'Sáb', 'Dom'];
+    const heatmapRows = heatmapData.map((row, i) => ({
+      day: dayLabels[i],
+      cells: row.map(v => ({ color: `oklch(32% 0.09 250 / ${v})` })),
+    }));
+
+    const topicDefs = [
+      { id: 'niveles', name: 'Niveles de evidencia y jerarquía', count: 60, pct: 32,
+        examples: [
+          '¿Cuál es la diferencia entre una revisión sistemática y un metaanálisis?',
+          '¿Dónde ubico los estudios de cohorte en la pirámide de evidencia?',
+          '¿Qué nivel de evidencia tiene una serie de casos?',
+        ] },
+      { id: 'sesgos', name: 'Sesgos en revisiones sistemáticas', count: 45, pct: 24,
+        examples: [
+          '¿Cómo identifico sesgo de publicación en un metaanálisis?',
+          '¿Qué herramienta se usa para evaluar riesgo de sesgo, RoB 2?',
+          '¿El sesgo de selección afecta más a estudios observacionales?',
+        ] },
+      { id: 'farmacocinetica', name: 'Farmacocinética', count: 34, pct: 18,
+        examples: [
+          '¿Cómo se calcula la vida media de un fármaco en insuficiencia renal?',
+          '¿Qué diferencia hay entre biodisponibilidad absoluta y relativa?',
+          '¿Cómo afecta el volumen de distribución la dosis de carga?',
+        ] },
+      { id: 'intervalos', name: 'Interpretación de intervalos de confianza', count: 28, pct: 15,
+        examples: [
+          '¿Qué significa que un IC 95% cruce el uno en un OR?',
+          '¿Cómo interpreto un intervalo de confianza muy amplio?',
+        ] },
+      { id: 'busqueda', name: 'Búsqueda bibliográfica en bases de datos', count: 20, pct: 11,
+        examples: [
+          '¿Cómo armo una ecuación de búsqueda booleana en PubMed?',
+          '¿Qué diferencia hay entre MeSH y palabras libres?',
+        ] },
+    ];
+    const maxTopicCount = Math.max(...topicDefs.map(t => t.count));
+    const topics = topicDefs.map(t => ({
+      name: t.name, count: t.count, pct: `${t.pct}%`,
+      barPct: `${Math.round((t.count / maxTopicCount) * 100)}%`,
+      examples: t.examples,
+      expanded: !!s.expandedTopics[t.id],
+      toggleLabel: s.expandedTopics[t.id] ? 'Ocultar ejemplos ▲' : 'Ver ejemplos ▼',
+      onToggle: () => this.setState(st => ({ expandedTopics: { ...st.expandedTopics, [t.id]: !st.expandedTopics[t.id] } })),
+    }));
+
+    const evoColors = [NAVY, TEAL, AMBER];
+    const evoSeries = [
+      { name: topicDefs[0].name, values: [10, 14, 18, 18] },
+      { name: topicDefs[1].name, values: [16, 12, 9, 8] },
+      { name: topicDefs[2].name, values: [3, 6, 11, 14] },
+    ];
+    const maxEvo = Math.max(...evoSeries.flatMap(e => e.values));
+    const toPoints = (vals) => vals.map((v, i) => {
+      const x = (i / (vals.length - 1)) * 540 + 10;
+      const y = 150 - (v / maxEvo) * 130;
+      return `${x},${y}`;
+    }).join(' ');
+    const evolutionLines = evoSeries.map((e, i) => ({ name: e.name, color: evoColors[i], points: toPoints(e.values) }));
+
+    const topicFocus = topicDefs.find(t => t.id === s.topicFocusId);
+
+    const effortDef = [
+      { label: '0 preguntas', count: 5 },
+      { label: '1–5', count: 10 },
+      { label: '6–20', count: 14 },
+      { label: '> 20', count: 3 },
+    ];
+    const maxEffort = Math.max(...effortDef.map(e => e.count));
+    const effortColors = ['oklch(52% 0.14 25)', 'oklch(62% 0.13 70)', 'oklch(52% 0.09 170)', NAVY];
+    const effort = effortDef.map((e, i) => ({
+      label: e.label, count: e.count,
+      heightPct: `${Math.round((e.count / maxEffort) * 100)}%`,
+      color: effortColors[i],
+    }));
+
+    const studentDefs = [
+      { name: 'Juan Esteban Muñoz', preguntas: 0, sesiones: 0, temas: [], days: null },
+      { name: 'Valentina Rojas', preguntas: 0, sesiones: 0, temas: [], days: null },
+      { name: 'Andrés Felipe Castaño', preguntas: 2, sesiones: 1, temas: ['Farmacocinética'], days: 19 },
+      { name: 'Laura Sofía Bermúdez', preguntas: 3, sesiones: 2, temas: ['Niveles de evidencia'], days: 22 },
+      { name: 'Sebastián Quintero', preguntas: 4, sesiones: 2, temas: ['Sesgos'], days: 5 },
+      { name: 'María Camila Torres', preguntas: 6, sesiones: 3, temas: ['Búsqueda bibliográfica'], days: 3 },
+      { name: 'Daniel Ricardo Pardo', preguntas: 9, sesiones: 4, temas: ['Niveles de evidencia', 'Sesgos'], days: 1 },
+      { name: 'Natalia Gómez Peña', preguntas: 12, sesiones: 5, temas: ['Intervalos de confianza'], days: 2 },
+      { name: 'Julián David Herrera', preguntas: 15, sesiones: 6, temas: ['Farmacocinética'], days: 0 },
+      { name: 'Paula Andrea Salcedo', preguntas: 18, sesiones: 7, temas: ['Sesgos', 'Búsqueda bibliográfica'], days: 1 },
+      { name: 'Camilo Andrés Vargas', preguntas: 22, sesiones: 9, temas: ['Niveles de evidencia'], days: 0 },
+      { name: 'Isabella Ortiz Marín', preguntas: 27, sesiones: 11, temas: ['Farmacocinética', 'Sesgos'], days: 0 },
+    ];
+    const sortedStudents = [...studentDefs].sort((a, b) => a.preguntas - b.preguntas);
+    const roster = sortedStudents.map((st, i) => ({
+      name: st.name, preguntas: st.preguntas, sesiones: st.sesiones, temas: st.temas,
+      rowStyle: `display:grid; grid-template-columns:2fr 1fr 1fr 2.2fr 0.8fr; align-items:center; padding:14px 24px; background:${i % 2 === 1 ? 'oklch(97% 0.005 250)' : 'transparent'}; border-bottom:1px solid oklch(90% 0.005 250)`,
+      onView: () => this.setState({ selectedStudentId: st.name }),
+    }));
+    const silenciosos = studentDefs.filter(st => st.preguntas > 0 && st.days >= 14).map(st => ({ name: st.name, days: st.days }));
+    const nuncaUsado = studentDefs.filter(st => st.preguntas === 0).map(st => st.name);
+    const selectedStudent = studentDefs.find(st => st.name === s.selectedStudentId);
+
+    return {
+      teacherName: 'Dra. Camila Restrepo',
+      onLogout: (e) => e.preventDefault(),
+      dateFrom: s.dateFrom, dateTo: s.dateTo,
+      onDateFromChange: (e) => this.setState({ dateFrom: e.target.value }),
+      onDateToChange: (e) => this.setState({ dateTo: e.target.value }),
+      roleOptions,
+      tabs,
+      viewTitle: s.activeTab === 'pulso' ? 'Pulso del curso' : (s.activeTab === 'temas' ? 'Temas' : 'Estudiantes'),
+      isPulso: s.activeTab === 'pulso',
+      isTemas: s.activeTab === 'temas',
+      isEstudiantesTab: s.activeTab === 'estudiantes',
+      isIdle: s.topicsState === 'idle',
+      isGenerating: s.topicsState === 'generating',
+      isGenerated: s.topicsState === 'generated',
+      onGenerate: () => this.startGenerating(),
+      generatingPhase: s.generatingPhase,
+      topicCount: topics.length,
+      topics,
+      evolutionLines,
+      topicFocusLabel: topicFocus ? topicFocus.name : null,
+      onClearFocus: () => this.setState({ topicFocusId: null }),
+      effort,
+      roster,
+      silenciosos, hasSilenciosos: silenciosos.length > 0, noSilenciosos: silenciosos.length === 0,
+      nuncaUsado, hasNuncaUsado: nuncaUsado.length > 0, noNuncaUsado: nuncaUsado.length === 0,
+      isStudentDetail: !!selectedStudent,
+      isTabsView: !selectedStudent,
+      onBackToStudents: () => this.setState({ selectedStudentId: null }),
+      detail: selectedStudent ? this.buildDetail(selectedStudent, topicDefs) : null,
+      kpis,
+      alerts, hasAlerts: alerts.length > 0, noAlerts: alerts.length === 0,
+      weekly,
+      dayDist,
+      onToggleDetail: () => this.setState(st => ({ showDetail: !st.showDetail })),
+      detailToggleLabel: s.showDetail ? 'Ocultar detalle de horario' : 'Ver detalle de horario',
+      showDetail: s.showDetail,
+      detailAvgDuration: '6m 40s',
+      detailConcentration: '46%',
+      detailWarning: true,
+      onToggleHeatmap: () => this.setState(st => ({ showHeatmap: !st.showHeatmap })),
+      heatmapToggleLabel: s.showHeatmap ? 'Colapsar' : 'Expandir',
+      showHeatmap: s.showHeatmap,
+      heatmapRows, heatmapLabels,
+    };
+  }
+}
+
+</script>
+</body>
+</html>

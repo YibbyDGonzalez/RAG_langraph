@@ -1,0 +1,311 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+  <style>
+    body { margin: 0; background: oklch(99% 0.002 250); font-family: 'Inter', system-ui, sans-serif; }
+    a { color: oklch(32% 0.07 250); }
+    a:hover { color: oklch(52% 0.09 170); }
+    ::placeholder { color: oklch(65% 0.005 250); }
+    @keyframes blink { 50% { opacity: 0; } }
+  </style>
+</helmet>
+
+<!-- ===== Pantalla 1: Inicio de sesión ===== -->
+<sc-if value="{{ isLogin }}" hint-placeholder-val="{{ true }}">
+  <div style="min-height:100vh; width:100%; display:flex; align-items:center; justify-content:center; background:oklch(99% 0.002 250)">
+    <div style="width:400px; background:oklch(99% 0.002 250); border:1px solid oklch(90% 0.005 250); border-radius:16px; padding:40px; display:flex; flex-direction:column; align-items:center; gap:22px">
+      <!-- Reutilizable: tile institucional (mismo patrón que sidebar del reporte) -->
+      <div style="width:48px; height:48px; border-radius:10px; background:oklch(32% 0.07 250); color:oklch(99% 0.002 250); display:flex; align-items:center; justify-content:center; font-size:11px; font-weight:600; font-family:monospace">PUJ</div>
+      <div style="text-align:center">
+        <div style="font-size:20px; font-weight:600; color:oklch(20% 0.01 250)">Asistente MBE</div>
+        <div style="font-size:13px; color:oklch(45% 0.01 250); margin-top:4px">Facultad de Medicina — Pontificia Universidad Javeriana</div>
+      </div>
+
+      <div style="width:100%; display:flex; flex-direction:column; gap:14px">
+        <label style="display:flex; flex-direction:column; gap:6px; font-size:13px; color:oklch(45% 0.01 250)">
+          Usuario
+          <input type="text" value="{{ username }}" onChange="{{ onUsernameChange }}" placeholder="estudiante1" style="border:1px solid oklch(90% 0.005 250); border-radius:9px; padding:11px 13px; font-size:14px; font-family:inherit; color:oklch(20% 0.01 250); background:oklch(99% 0.002 250)"></input>
+        </label>
+        <label style="display:flex; flex-direction:column; gap:6px; font-size:13px; color:oklch(45% 0.01 250)">
+          Contraseña
+          <input type="password" value="{{ password }}" onChange="{{ onPasswordChange }}" onKeyDown="{{ onKeyDown }}" placeholder="••••••••" style="border:1px solid oklch(90% 0.005 250); border-radius:9px; padding:11px 13px; font-size:14px; font-family:inherit; color:oklch(20% 0.01 250); background:oklch(99% 0.002 250)"></input>
+        </label>
+
+        <sc-if value="{{ loginError }}" hint-placeholder-val="{{ false }}">
+          <div style="font-size:13px; color:oklch(52% 0.14 25)">Usuario o contraseña incorrectos.</div>
+        </sc-if>
+
+        <!-- Reutilizable: botón primario -->
+        <button onClick="{{ onSubmitLogin }}" style="margin-top:4px; padding:12px; background:oklch(32% 0.07 250); color:oklch(99% 0.002 250); border:none; border-radius:9px; font-size:14px; font-weight:600; cursor:pointer">Iniciar sesión</button>
+
+        <div style="font-size:12px; color:oklch(60% 0.01 250); text-align:center">Para esta demo: cualquier usuario, contraseña "demo".</div>
+      </div>
+    </div>
+  </div>
+</sc-if>
+
+<!-- ===== Pantalla 2: Asistente (chat) — estado de bienvenida ===== -->
+<sc-if value="{{ isChat }}" hint-placeholder-val="{{ false }}">
+  <div style="display:flex; height:100vh; width:100%; color:oklch(20% 0.01 250); background:oklch(99% 0.002 250)">
+
+    <!-- Reutilizable: sidebar (mismo patrón del reporte, con historial en vez de filtros) -->
+    <aside style="width:280px; min-width:280px; background:oklch(97% 0.005 250); border-right:1px solid oklch(90% 0.005 250); display:flex; flex-direction:column; padding:22px 18px; gap:20px">
+      <div style="display:flex; align-items:center; gap:12px">
+        <div style="width:36px; height:36px; border-radius:8px; background:oklch(32% 0.07 250); color:oklch(99% 0.002 250); display:flex; align-items:center; justify-content:center; font-size:10px; font-weight:600; font-family:monospace">PUJ</div>
+        <div style="font-size:14px; font-weight:600">Asistente MBE</div>
+      </div>
+
+      <button onClick="{{ onNewConversation }}" style="display:flex; align-items:center; justify-content:center; gap:8px; padding:11px; background:oklch(94% 0.02 250); color:oklch(32% 0.07 250); border:1px solid oklch(90% 0.005 250); border-radius:9px; font-size:14px; font-weight:600; cursor:pointer">+ Nueva conversación</button>
+
+      <div style="display:flex; flex-direction:column; gap:8px; flex:1; overflow-y:auto">
+        <div style="font-size:11px; font-weight:600; letter-spacing:0.04em; text-transform:uppercase; color:oklch(60% 0.01 250); padding:0 4px">Conversaciones</div>
+        <sc-if value="{{ hasHistory }}" hint-placeholder-val="{{ false }}">
+          <sc-for list="{{ conversations }}" as="c" hint-placeholder-count="3">
+            <button onClick="{{ c.onSelect }}" style="{{ c.style }}">{{ c.title }}</button>
+          </sc-for>
+        </sc-if>
+        <sc-if value="{{ noHistory }}" hint-placeholder-val="{{ true }}">
+          <div style="font-size:13px; color:oklch(60% 0.01 250); padding:8px 4px; line-height:1.5">Aún no tienes conversaciones anteriores.</div>
+        </sc-if>
+      </div>
+
+      <div style="display:flex; flex-direction:column; gap:4px; padding:12px 4px 0 4px; border-top:1px solid oklch(90% 0.005 250)">
+        <div style="font-size:13px; font-weight:600">{{ userName }}</div>
+        <button onClick="{{ onLogout }}" style="align-self:flex-start; background:none; border:none; padding:0; font-size:13px; color:oklch(45% 0.01 250); cursor:pointer">Cerrar sesión</button>
+      </div>
+    </aside>
+
+    <!-- Área central -->
+    <main style="flex:1; display:flex; flex-direction:column; height:100vh">
+
+      <!-- Estado de bienvenida -->
+      <sc-if value="{{ isWelcome }}" hint-placeholder-val="{{ true }}">
+        <div style="flex:1; display:flex; flex-direction:column; align-items:center; justify-content:center; padding:40px; gap:28px; overflow-y:auto">
+          <div style="text-align:center; max-width:560px">
+            <div style="font-size:28px; font-weight:600; color:oklch(20% 0.01 250); line-height:1.3">Hola, {{ userName }}. ¿Sobre qué quieres estudiar hoy?</div>
+          </div>
+          <div style="display:flex; flex-direction:column; gap:10px; width:100%; max-width:560px">
+            <sc-for list="{{ suggestions }}" as="sug" hint-placeholder-count="3">
+              <button onClick="{{ sug.onSelect }}" style="display:flex; align-items:center; gap:14px; text-align:left; padding:16px 18px; background:oklch(99% 0.002 250); border:1px solid oklch(90% 0.005 250); border-radius:12px; cursor:pointer">
+                <div style="width:32px; height:32px; border-radius:8px; background:oklch(94% 0.02 250); color:oklch(32% 0.07 250); display:flex; align-items:center; justify-content:center; font-size:13px; font-weight:700; flex-shrink:0; font-family:monospace">{{ sug.glyph }}</div>
+                <span style="font-size:14px; color:oklch(20% 0.01 250)">{{ sug.text }}</span>
+              </button>
+            </sc-for>
+          </div>
+        </div>
+      </sc-if>
+
+      <!-- Conversación activa -->
+      <sc-if value="{{ isConversation }}" hint-placeholder-val="{{ false }}">
+        <div ref="{{ setContainerRef }}" style="flex:1; overflow-y:auto; padding:32px 40px; display:flex; flex-direction:column; gap:18px">
+          <div style="max-width:720px; margin:0 auto; width:100%; display:flex; flex-direction:column; gap:18px">
+            <sc-for list="{{ messages }}" as="m" hint-placeholder-count="2">
+              <div style="{{ m.rowStyle }}">
+                <div style="{{ m.bubbleStyle }}">
+                  <div style="white-space:pre-wrap">{{ m.displayedText }}</div>
+                  <sc-if value="{{ m.streaming }}" hint-placeholder-val="{{ false }}">
+                    <span style="display:inline-block; width:7px; height:15px; background:oklch(45% 0.01 250); margin-left:2px; vertical-align:text-bottom; animation:blink 1s steps(2) infinite"></span>
+                  </sc-if>
+                  <sc-if value="{{ m.isAssistant }}" hint-placeholder-val="{{ false }}">
+                    <div style="margin-top:10px; padding-top:8px; border-top:1px solid oklch(92% 0.005 250); display:flex; align-items:center; gap:6px; font-size:12px; color:oklch(60% 0.01 250)">
+                      <span style="font-family:monospace">§</span> Ver fuente
+                    </div>
+                  </sc-if>
+                </div>
+              </div>
+            </sc-for>
+          </div>
+        </div>
+      </sc-if>
+
+      <!-- Reutilizable: campo de entrada fijo al pie -->
+      <div style="padding:18px 40px 26px 40px; border-top:1px solid oklch(90% 0.005 250)">
+        <div style="max-width:720px; margin:0 auto; display:flex; align-items:flex-end; gap:10px; background:oklch(99% 0.002 250); border:1px solid oklch(90% 0.005 250); border-radius:14px; padding:10px 10px 10px 18px">
+          <textarea rows="1" value="{{ draft }}" onChange="{{ onDraftChange }}" onKeyDown="{{ onInputKeyDown }}" disabled="{{ isGenerating }}" placeholder="Escribe tu pregunta sobre Medicina Basada en Evidencia..." style="flex:1; border:none; outline:none; resize:none; font-family:inherit; font-size:14px; color:oklch(20% 0.01 250); background:none; padding:6px 0; max-height:120px"></textarea>
+          <sc-if value="{{ isGenerating }}" hint-placeholder-val="{{ false }}">
+            <button onClick="{{ onStop }}" style="padding:10px 16px; border:1px solid oklch(90% 0.005 250); border-radius:9px; font-size:13px; font-weight:600; cursor:pointer; background:oklch(99% 0.002 250); color:oklch(45% 0.01 250)">Detener</button>
+          </sc-if>
+          <button onClick="{{ onSend }}" disabled="{{ sendDisabled }}" style="{{ sendButtonStyle }}">Enviar</button>
+        </div>
+      </div>
+    </main>
+  </div>
+</sc-if>
+
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props="{&quot;$preview&quot;: {&quot;width&quot;: 1440, &quot;height&quot;: 960}, &quot;userRole&quot;: {&quot;editor&quot;: &quot;enum&quot;, &quot;default&quot;: &quot;estudiante&quot;, &quot;options&quot;: [&quot;estudiante&quot;, &quot;docente&quot;], &quot;tsType&quot;: &quot;string&quot;, &quot;section&quot;: &quot;Comportamiento&quot;}, &quot;historyState&quot;: {&quot;editor&quot;: &quot;enum&quot;, &quot;default&quot;: &quot;con_conversaciones&quot;, &quot;options&quot;: [&quot;vacio&quot;, &quot;con_conversaciones&quot;], &quot;tsType&quot;: &quot;string&quot;, &quot;section&quot;: &quot;Comportamiento&quot;}}">
+const NAVY = 'oklch(32% 0.07 250)';
+const TEAL = 'oklch(52% 0.09 170)';
+
+class Component extends DCLogic {
+  ANSWERS = [
+    { keys: ['pico'], text: 'Una pregunta clínica en formato PICO se estructura en cuatro componentes:\n\n- Población: quién es el paciente o grupo (edad, condición, contexto clínico).\n- Intervención: qué exposición, tratamiento o prueba se evalúa.\n- Comparación: frente a qué alternativa (placebo, otro tratamiento, ausencia de intervención).\n- Outcome (desenlace): qué resultado clínico interesa medir.\n\nFormular la pregunta así facilita traducirla en una estrategia de búsqueda bibliográfica precisa y en un diseño de estudio adecuado para responderla.' },
+    { keys: ['grade'], text: 'En el sistema GRADE, un grado de evidencia "alto" indica que hay mucha confianza en que el efecto estimado es cercano al efecto real. Para llegar a ese nivel, la evidencia normalmente proviene de ensayos clínicos aleatorizados bien diseñados, sin limitaciones importantes de riesgo de sesgo, inconsistencia, evidencia indirecta o imprecisión.\n\nEsto no significa certeza absoluta, sino que investigación adicional es poco probable que cambie la conclusión de forma relevante.' },
+    { keys: ['riesgo relativo', 'rr'], text: 'El riesgo relativo (RR) compara la probabilidad de un desenlace entre el grupo expuesto y el grupo no expuesto:\n\nRR = Incidencia en expuestos / Incidencia en no expuestos\n\n- RR = 1: no hay diferencia de riesgo entre grupos.\n- RR > 1: la exposición se asocia a mayor riesgo del desenlace.\n- RR < 1: la exposición se asocia a menor riesgo (efecto protector).\n\nEs distinto del odds ratio (OR): el RR se interpreta directamente como probabilidad, mientras que el OR compara momios, y ambos tienden a converger cuando el desenlace es poco frecuente.' },
+    { keys: ['nnt'], text: 'El número necesario a tratar (NNT) es el número de pacientes que deben recibir una intervención para prevenir un evento adverso adicional, comparado con el grupo control.\n\nSe calcula como el inverso de la reducción absoluta del riesgo (RAR):\n\nNNT = 1 / RAR\n\nUn NNT bajo indica que la intervención es muy eficiente (pocos pacientes tratados por cada evento evitado); un NNT alto sugiere un beneficio más marginal a nivel poblacional.' },
+    { keys: ['sesgo de publicación'], text: 'El sesgo de publicación ocurre cuando los estudios con resultados positivos o estadísticamente significativos tienen más probabilidad de publicarse que los estudios con resultados nulos o negativos, distorsionando la evidencia disponible en una revisión sistemática.\n\nSe suele explorar con gráficos de embudo (funnel plot) y pruebas estadísticas como el test de Egger; una asimetría marcada es una señal de alerta.' },
+  ];
+
+  CONVERSATIONS = [
+    { id: 'c1', title: '¿Cómo se calcula el NNT?', messages: [
+      { role: 'user', displayedText: '¿Cómo se calcula el NNT?' },
+      { role: 'assistant', displayedText: this.answerFor('nnt') },
+    ] },
+    { id: 'c2', title: 'Diferencia entre RR y OR', messages: [
+      { role: 'user', displayedText: '¿Cuál es la diferencia entre riesgo relativo y odds ratio?' },
+      { role: 'assistant', displayedText: this.answerFor('riesgo relativo') },
+    ] },
+    { id: 'c3', title: 'Sesgo de publicación en metaanálisis', messages: [
+      { role: 'user', displayedText: '¿Qué es el sesgo de publicación en un metaanálisis?' },
+      { role: 'assistant', displayedText: this.answerFor('sesgo de publicación') },
+    ] },
+  ];
+
+  state = {
+    screen: 'login',
+    username: '',
+    password: '',
+    loginError: false,
+    draft: '',
+    selectedConversationId: (this.props.historyState || 'con_conversaciones') === 'con_conversaciones' ? 'c1' : null,
+    messages: (this.props.historyState || 'con_conversaciones') === 'con_conversaciones' ? this.CONVERSATIONS[0].messages : [],
+    isGenerating: false,
+  };
+
+  answerFor(key) {
+    return this.ANSWERS.find(a => a.keys.includes(key)).text;
+  }
+
+  submitLogin() {
+    if (!this.state.username || this.state.password !== 'demo') {
+      this.setState({ loginError: true });
+      return;
+    }
+    this.setState({ screen: 'chat', loginError: false });
+  }
+
+  matchAnswer(question) {
+    const q = question.toLowerCase();
+    const found = this.ANSWERS.find(a => a.keys.some(k => q.includes(k)));
+    if (found) return found.text;
+    return 'Con el material disponible del curso, puedo orientarte de forma general, pero te recomiendo precisar la pregunta (población, intervención, comparación y desenlace) para darte una respuesta más anclada en la evidencia disponible.';
+  }
+
+  send(text) {
+    const t = (text ?? this.state.draft).trim();
+    if (!t || this.state.isGenerating) return;
+    const answer = this.matchAnswer(t);
+    const words = answer.split(' ');
+    this.setState(st => ({
+      draft: '', isGenerating: true,
+      messages: [...st.messages, { role: 'user', displayedText: t }, { role: 'assistant', displayedText: '', streaming: true }],
+    }));
+    let i = 0;
+    this._streamInterval = setInterval(() => {
+      i++;
+      this.setState(st => {
+        const msgs = st.messages.slice();
+        const last = msgs[msgs.length - 1];
+        msgs[msgs.length - 1] = { ...last, displayedText: words.slice(0, i).join(' ') };
+        return { messages: msgs };
+      });
+      if (i >= words.length) {
+        clearInterval(this._streamInterval);
+        this.setState(st => {
+          const msgs = st.messages.slice();
+          const last = msgs[msgs.length - 1];
+          msgs[msgs.length - 1] = { ...last, streaming: false };
+          return { messages: msgs, isGenerating: false };
+        });
+      }
+    }, 45);
+  }
+
+  stopGenerating() {
+    clearInterval(this._streamInterval);
+    this.setState(st => {
+      const msgs = st.messages.slice();
+      const last = msgs[msgs.length - 1];
+      if (last && last.role === 'assistant') msgs[msgs.length - 1] = { ...last, streaming: false };
+      return { messages: msgs, isGenerating: false };
+    });
+  }
+
+  componentDidUpdate() {
+    if (this.containerEl) this.containerEl.scrollTop = this.containerEl.scrollHeight;
+  }
+
+  renderVals() {
+    const s = this.state;
+    const role = this.props.userRole || 'estudiante';
+    const userName = role === 'docente' ? 'Dr. Andrés Salazar' : 'Estudiante 12';
+
+    const historyDef = (this.props.historyState || 'con_conversaciones') === 'con_conversaciones' ? this.CONVERSATIONS : [];
+    const conversations = historyDef.map(c => ({
+      title: c.title,
+      style: `text-align:left; padding:10px 12px; border-radius:9px; font-size:13px; white-space:nowrap; overflow:hidden; text-overflow:ellipsis; cursor:pointer; border:none; border-left:3px solid ${s.selectedConversationId === c.id ? TEAL : 'transparent'}; background:${s.selectedConversationId === c.id ? 'oklch(94% 0.02 250)' : 'none'}; color:oklch(20% 0.01 250)`,
+      onSelect: () => this.setState({ selectedConversationId: c.id, messages: c.messages, draft: '', isGenerating: false }),
+    }));
+
+    const suggestionDefs = [
+      { glyph: 'P', text: '¿Cómo formulo una pregunta clínica en formato PICO?' },
+      { glyph: 'G', text: '¿Qué significa que una recomendación tenga grado GRADE alto?' },
+      { glyph: 'R', text: '¿Cómo calculo e interpreto el riesgo relativo de un estudio?' },
+    ];
+    const suggestions = suggestionDefs.map(sd => ({
+      glyph: sd.glyph, text: sd.text,
+      onSelect: () => this.send(sd.text),
+    }));
+
+    return {
+      isLogin: s.screen === 'login',
+      isChat: s.screen === 'chat',
+      username: s.username, password: s.password,
+      onUsernameChange: (e) => this.setState({ username: e.target.value }),
+      onPasswordChange: (e) => this.setState({ password: e.target.value }),
+      onKeyDown: (e) => { if (e.key === 'Enter') this.submitLogin(); },
+      loginError: s.loginError,
+      onSubmitLogin: () => this.submitLogin(),
+      userName,
+      onLogout: () => this.setState({ screen: 'login', username: '', password: '', messages: [] }),
+      onNewConversation: () => this.setState({ selectedConversationId: null, draft: '', messages: [], isGenerating: false }),
+      hasHistory: conversations.length > 0,
+      noHistory: conversations.length === 0,
+      conversations,
+      suggestions,
+      isWelcome: s.messages.length === 0,
+      isConversation: s.messages.length > 0,
+      messages: s.messages.map(m => ({
+        displayedText: m.displayedText,
+        streaming: !!m.streaming,
+        isAssistant: m.role === 'assistant',
+        rowStyle: `display:flex; justify-content:${m.role === 'user' ? 'flex-end' : 'flex-start'}`,
+        bubbleStyle: m.role === 'user'
+          ? 'max-width:75%; background:oklch(94% 0.02 250); color:oklch(20% 0.01 250); padding:12px 16px; border-radius:14px 14px 4px 14px; font-size:14px; line-height:1.6'
+          : 'max-width:75%; background:oklch(99% 0.002 250); color:oklch(20% 0.01 250); padding:14px 18px; border:1px solid oklch(90% 0.005 250); border-radius:14px 14px 14px 4px; font-size:15px; line-height:1.7',
+      })),
+      setContainerRef: (el) => { this.containerEl = el; },
+      isGenerating: s.isGenerating,
+      onStop: () => this.stopGenerating(),
+      draft: s.draft,
+      onDraftChange: (e) => this.setState({ draft: e.target.value }),
+      onInputKeyDown: (e) => { if (e.key === 'Enter' && !e.shiftKey) { e.preventDefault(); this.send(); } },
+      onSend: () => this.send(),
+      sendDisabled: !s.draft.trim() || s.isGenerating,
+      sendButtonStyle: `padding:10px 18px; border:none; border-radius:9px; font-size:14px; font-weight:600; cursor:${s.draft.trim() && !s.isGenerating ? 'pointer' : 'not-allowed'}; background:${s.draft.trim() && !s.isGenerating ? NAVY : 'oklch(90% 0.005 250)'}; color:${s.draft.trim() && !s.isGenerating ? 'oklch(99% 0.002 250)' : 'oklch(60% 0.01 250)'}`,
+    };
+  }
+}
+
+</script>
+</body>
+</html>
