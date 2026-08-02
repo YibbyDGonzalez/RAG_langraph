@@ -4,7 +4,7 @@ from contextlib import asynccontextmanager
 from fastapi import FastAPI
 
 from backend import bootstrap
-from backend.routers import chat, conversations
+from backend.routers import auth, chat, conversations
 from backend.services import rag_service
 
 
@@ -28,5 +28,6 @@ async def lifespan(app: FastAPI):
 
 app = FastAPI(title="Asistente MBE API", lifespan=lifespan)
 
+app.include_router(auth.router, prefix="/api", tags=["auth"])
 app.include_router(chat.router, prefix="/api", tags=["chat"])
 app.include_router(conversations.router, prefix="/api", tags=["conversations"])

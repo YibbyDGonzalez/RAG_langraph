@@ -1,9 +1,10 @@
 import json
 import time
 
-from fastapi import APIRouter, Header, Request
+from fastapi import APIRouter, Depends, Request
 from fastapi.responses import StreamingResponse
 
+from backend.dependencies import get_current_user
 from backend.models.schemas import ChatRequest
 from backend.services import history_service, rag_service
 
@@ -15,7 +16,7 @@ def _sse(event: str, data: dict) -> str:
 
 
 @router.post("/chat")
-async def chat(payload: ChatRequest, request: Request, x_user_id: str = Header(...)):
+async def chat(payload: ChatRequest, request: Request, usuario: dict = Depends(get_current_user)):
     recursos = request.app.state.resources
 
     def event_stream():
@@ -33,7 +34,7 @@ async def chat(payload: ChatRequest, request: Request, x_user_id: str = Header(.
         lat_total = time.time() - t_total_start
 
         history_service.registrar_intercambio(
-            usuario=x_user_id,
+            usuario=usuario["username"],
             session_id=payload.conversation_id,
             pregunta=payload.pregunta,
             meta=meta,
