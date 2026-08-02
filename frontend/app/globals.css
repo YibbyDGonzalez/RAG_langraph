@@ -1,0 +1,30 @@
+@import "tailwindcss";
+
+@theme {
+  --color-navy: oklch(32% 0.07 250);
+  --color-teal: oklch(52% 0.09 170);
+  --color-surface: oklch(99% 0.002 250);
+  --color-surface-alt: oklch(97% 0.005 250);
+  --color-surface-selected: oklch(94% 0.02 250);
+  --color-border: oklch(90% 0.005 250);
+  --color-ink: oklch(20% 0.01 250);
+  --color-ink-soft: oklch(45% 0.01 250);
+  --color-ink-muted: oklch(60% 0.01 250);
+  --color-danger: oklch(52% 0.14 25);
+  --font-sans: var(--font-inter), system-ui, sans-serif;
+}
+
+@keyframes blink {
+  50% {
+    opacity: 0;
+  }
+}
+
+.cursor-blink {
+  animation: blink 1s steps(2) infinite;
+}
+
+body {
+  background: var(--color-surface);
+  color: var(--color-ink);
+}
