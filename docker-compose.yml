@@ -1,20 +1,62 @@
 services:
 
-  app:
+  backend:
     build:
       context: .
-      dockerfile: Dockerfile.app
-    image: mbe-app:latest
-    ports:
-      - "8501:8501"
+      dockerfile: backend/Dockerfile
+    image: mbe-backend:latest
     volumes:
-      # Los datos (FAISS index + CSV) se montan en modo lectura
-      - ./data:/app/data:ro
-      # Logs en su propio mount con escritura habilitada
-      - ./data/logs:/app/data/logs
-      # Logo de la Javeriana accesible en el contenedor sin rebuild
-      - ./Javeriana.png:/app/Javeriana.png:ro
+      # FAISS index + CSV en modo lectura
+      - ./streamlit_app/data:/app/streamlit_app/data:ro
+      # Logs con escritura habilitada (sobre-monta el subpath anterior)
+      - ./streamlit_app/data/logs:/app/streamlit_app/data/logs
       # Usuarios para autenticacion (editable sin rebuild)
-      - ./users.yaml:/app/users.yaml:ro
+      - ./streamlit_app/users.yaml:/app/streamlit_app/users.yaml:ro
     env_file:
       - .env
+
+  frontend:
+    build:
+      context: ./frontend
+      dockerfile: Dockerfile
+    image: mbe-frontend:latest
+    environment:
+      # URL interna del backend en la red de Docker (no la URL pública:
+      # el navegador nunca le habla al backend directamente, solo a
+      # través de las rutas /api/* del propio Next.js).
+      - NEXT_PUBLIC_API_URL=http://backend:8000
+    depends_on:
+      - backend
+
+  caddy:
+    image: caddy:2-alpine
+    ports:
+      - "80:80"
+      - "443:443"
+    volumes:
+      - ./Caddyfile:/etc/caddy/Caddyfile:ro
+      - caddy_data:/data
+      - caddy_config:/config
+    depends_on:
+      - frontend
+
+volumes:
+  caddy_data:
+  caddy_config:
+
+# --- Streamlit original: NO se levanta en este compose, solo queda
+#     comentado por si se quiere revivir en paralelo. ---
+# streamlit:
+#   build:
+#     context: .
+#     dockerfile: streamlit_app/Dockerfile.app
+#   image: mbe-streamlit:latest
+#   ports:
+#     - "8501:8501"
+#   volumes:
+#     - ./streamlit_app/data:/app/data:ro
+#     - ./streamlit_app/data/logs:/app/data/logs
+#     - ./streamlit_app/Javeriana.png:/app/Javeriana.png:ro
+#     - ./streamlit_app/users.yaml:/app/users.yaml:ro
+#   env_file:
+#     - .env

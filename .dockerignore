@@ -1,0 +1,9 @@
+.git
+env/
+frontend/node_modules
+frontend/.next
+**/__pycache__
+**/*.pyc
+.env
+streamlit_app/data
+cloudflared.exe

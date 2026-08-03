@@ -1,0 +1,8 @@
+# Todo el tráfico va al frontend (Next.js): la UI y también sus propias
+# rutas /api/* (proxy BFF que reenvía al backend FastAPI por la red
+# interna de Docker, leyendo la cookie httpOnly del JWT). El backend
+# nunca queda expuesto directamente — si Caddy lo enrutara aparte en
+# /api, se saltaría ese proxy y rompería la autenticación por cookie.
+:80 {
+	reverse_proxy frontend:3000
+}
