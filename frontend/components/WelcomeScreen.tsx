@@ -16,13 +16,18 @@ interface WelcomeScreenProps {
   onSelectSuggestion: (text: string) => void;
 }
 
+function primerNombre(nombreCompleto: string): string {
+  return nombreCompleto.trim().split(/\s+/)[0] ?? nombreCompleto;
+}
+
 export function WelcomeScreen({ userName, onSelectSuggestion }: WelcomeScreenProps) {
   return (
     <div className="flex-1 flex flex-col items-center justify-center p-10 gap-7 overflow-y-auto">
       <div className="text-center max-w-[560px]">
         <div className="text-[28px] font-semibold text-ink leading-tight">
-          Hola, {userName}. ¿Sobre qué quieres estudiar hoy?
+          Hola, {primerNombre(userName)} 👋 Soy tu asistente de Medicina Basada en la Evidencia.
         </div>
+        <div className="text-sm text-ink-soft mt-2">Puedes hacerme preguntas o elegir una de las sugerencias:</div>
       </div>
       <div className="flex flex-col gap-2.5 w-full max-w-[560px]">
         {SUGGESTIONS.map((sug) => (

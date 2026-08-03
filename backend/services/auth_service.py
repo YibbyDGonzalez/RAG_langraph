@@ -45,20 +45,31 @@ def autenticar(username: str, password: str) -> dict:
     if not bcrypt.checkpw(password.encode(), hash_guardado):
         raise CredencialesInvalidas()
 
-    return {"username": username, "role": rol_de_usuario(username)}
+    return {
+        "username": username,
+        "role": rol_de_usuario(username),
+        "name": datos.get("name") or username,
+    }
 
 
-def crear_token(username: str, role: str) -> str:
+def crear_token(username: str, role: str, name: str) -> str:
     payload = {
         "sub": username,
         "role": role,
+        "name": name,
         "exp": int(time.time()) + JWT_EXPIRY_SECONDS,
     }
     return jwt.encode(payload, JWT_SECRET_KEY, algorithm=JWT_ALGORITHM)
 
 
 def decodificar_token(token: str) -> dict:
-    """Devuelve {username, role} o lanza jwt.PyJWTError si el token es
+    """Devuelve {username, role, name} o lanza jwt.PyJWTError si el token es
     inválido o expiró."""
     payload = jwt.decode(token, JWT_SECRET_KEY, algorithms=[JWT_ALGORITHM])
-    return {"username": payload["sub"], "role": payload["role"]}
+    return {
+        "username": payload["sub"],
+        "role": payload["role"],
+        # Tokens emitidos antes de este cambio no traen "name" (siguen
+        # válidos hasta que expiren, 24h) — se cae al username.
+        "name": payload.get("name", payload["sub"]),
+    }

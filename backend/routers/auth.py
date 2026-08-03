@@ -27,10 +27,10 @@ async def login(payload: LoginRequest):
             status_code=status.HTTP_401_UNAUTHORIZED,
             detail="Usuario o contraseña incorrectos",
         )
-    token = auth_service.crear_token(datos["username"], datos["role"])
+    token = auth_service.crear_token(datos["username"], datos["role"], datos["name"])
     return {"access_token": token, "role": datos["role"]}
 
 
 @router.get("/auth/me")
 async def me(usuario: dict = Depends(get_current_user)):
-    return {"user_id": usuario["username"], "role": usuario["role"]}
+    return {"user_id": usuario["username"], "role": usuario["role"], "name": usuario["name"]}

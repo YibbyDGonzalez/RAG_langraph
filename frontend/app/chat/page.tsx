@@ -10,7 +10,7 @@ export default async function ChatPage() {
 
   const meRes = await fetch(fastapiUrl("/api/auth/me"), { headers: auth, cache: "no-store" });
   if (!meRes.ok) redirect("/login");
-  const me: { user_id: string; role: string } = await meRes.json();
+  const me: { user_id: string; role: string; name: string } = await meRes.json();
 
   const conversationsRes = await fetch(fastapiUrl("/api/conversations"), {
     headers: auth,
@@ -20,5 +20,5 @@ export default async function ChatPage() {
     ? await conversationsRes.json()
     : [];
 
-  return <ChatShell userName={me.user_id} role={me.role} initialConversations={conversations} />;
+  return <ChatShell userName={me.name} role={me.role} initialConversations={conversations} />;
 }

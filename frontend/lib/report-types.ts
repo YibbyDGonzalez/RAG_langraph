@@ -126,4 +126,5 @@ export interface ReportMeta {
 export interface MeInfo {
   user_id: string;
   role: string;
+  name: string;
 }
