@@ -1,9 +1,12 @@
 "use client";
 
+import Link from "next/link";
+
 import type { ConversationSummary } from "@/lib/types";
 
 interface SidebarProps {
   userName: string;
+  role: string;
   conversations: ConversationSummary[];
   activeConversationId: string | null;
   onSelectConversation: (id: string) => void;
@@ -13,6 +16,7 @@ interface SidebarProps {
 
 export function Sidebar({
   userName,
+  role,
   conversations,
   activeConversationId,
   onSelectConversation,
@@ -62,6 +66,15 @@ export function Sidebar({
           })
         )}
       </div>
+
+      {role === "Docente" && (
+        <Link
+          href="/reporte"
+          className="flex items-center gap-2 px-3 py-2.5 rounded-[9px] text-[13px] font-semibold text-navy bg-surface-selected border border-border"
+        >
+          📊 Reporte de uso
+        </Link>
+      )}
 
       <div className="flex flex-col gap-1 pt-3 px-1 border-t border-border">
         <div className="text-[13px] font-semibold">{userName}</div>

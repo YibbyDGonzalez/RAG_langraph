@@ -11,10 +11,11 @@ import type { ConversationSummary, Message } from "@/lib/types";
 
 interface ChatShellProps {
   userName: string;
+  role: string;
   initialConversations: ConversationSummary[];
 }
 
-export function ChatShell({ userName, initialConversations }: ChatShellProps) {
+export function ChatShell({ userName, role, initialConversations }: ChatShellProps) {
   const router = useRouter();
   const [conversations, setConversations] = useState(initialConversations);
   const [activeConversationId, setActiveConversationId] = useState<string | null>(null);
@@ -159,6 +160,7 @@ export function ChatShell({ userName, initialConversations }: ChatShellProps) {
     <div className="flex h-screen w-full text-ink bg-surface">
       <Sidebar
         userName={userName}
+        role={role}
         conversations={conversations}
         activeConversationId={activeConversationId}
         onSelectConversation={(id) => void selectConversation(id)}

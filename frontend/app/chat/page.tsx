@@ -20,5 +20,5 @@ export default async function ChatPage() {
     ? await conversationsRes.json()
     : [];
 
-  return <ChatShell userName={me.user_id} initialConversations={conversations} />;
+  return <ChatShell userName={me.user_id} role={me.role} initialConversations={conversations} />;
 }
