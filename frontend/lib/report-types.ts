@@ -44,6 +44,25 @@ export interface PulsoData {
   total_estudiantes: number;
 }
 
+export interface Tema {
+  nombre: string;
+  n_preguntas: number;
+  pct: number;
+  ejemplos: string[];
+}
+
+export interface EvolucionSemanalPunto {
+  semana: string;
+  [tema: string]: string | number;
+}
+
+export interface TemasEstado {
+  status: "idle" | "generado";
+  temas?: Tema[];
+  preguntas_destacadas?: string[];
+  evolucion_semanal?: EvolucionSemanalPunto[];
+}
+
 export interface ReportMeta {
   min_date: string | null;
   max_date: string | null;

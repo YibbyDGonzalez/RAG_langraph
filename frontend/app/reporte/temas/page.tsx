@@ -1,9 +1,27 @@
-// Nivel 2 (Temas) se implementa en la Fase 4c. Placeholder para que la
-// pestaña navegue sin 404 mientras tanto.
-export default function TemasPage() {
-  return (
-    <div className="bg-surface border border-border rounded-2xl px-[26px] py-12 text-center text-sm text-ink-soft">
-      El análisis de temas se implementa en la Fase 4c.
-    </div>
-  );
+import { TemasView } from "@/components/report/TemasView";
+import { fetchReportMeta, fetchTemasEstado } from "@/lib/report-api";
+import type { RolFiltro } from "@/lib/report-types";
+
+interface TemasPageProps {
+  searchParams: Promise<{ desde?: string; hasta?: string; rol?: string }>;
+}
+
+export default async function TemasPage({ searchParams }: TemasPageProps) {
+  const params = await searchParams;
+  const meta = await fetchReportMeta();
+
+  const desde = params.desde ?? meta?.min_date ?? "";
+  const hasta = params.hasta ?? meta?.max_date ?? "";
+  const rol = (params.rol as RolFiltro) ?? "todos";
+
+  if (!desde || !hasta) {
+    return <div className="text-sm text-ink-soft">No hay datos disponibles todavía.</div>;
+  }
+
+  const estado = await fetchTemasEstado({ desde, hasta, rol });
+  if (!estado) {
+    return <div className="text-sm text-danger">No se pudo cargar el estado del análisis de temas.</div>;
+  }
+
+  return <TemasView initialEstado={estado} desde={desde} hasta={hasta} rol={rol} />;
 }

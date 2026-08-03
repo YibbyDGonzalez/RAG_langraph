@@ -36,13 +36,14 @@ async def generar_temas(
             detail="GROQ_API_KEY no configurada; el análisis de temas no está disponible.",
         )
     try:
-        resultado = report_service.generar_temas(desde, hasta, rol, groq_key, request.app.state.temas_cache)
+        report_service.generar_temas(desde, hasta, rol, groq_key, request.app.state.temas_cache)
     except report_service.DatosInsuficientes as e:
         raise HTTPException(
             status_code=422,
             detail=f"Se necesitan al menos 5 preguntas para el análisis (período actual: {e.n}).",
         )
-    return {"temas": resultado["temas"], "preguntas_destacadas": resultado["preguntas_destacadas"]}
+    # Mismo shape que GET /temas (incluye evolucion_semanal), ya con la caché poblada.
+    return report_service.estado_temas(desde, hasta, rol, request.app.state.temas_cache)
 
 
 @router.get("/temas")

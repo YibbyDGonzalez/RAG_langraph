@@ -1,5 +1,5 @@
 import { authHeader, fastapiUrl } from "@/lib/fastapi";
-import type { MeInfo, PulsoData, ReportMeta, RolFiltro } from "@/lib/report-types";
+import type { MeInfo, PulsoData, ReportMeta, RolFiltro, TemasEstado } from "@/lib/report-types";
 
 export async function fetchMeReport(): Promise<MeInfo | null> {
   const auth = await authHeader();
@@ -30,4 +30,13 @@ export async function fetchPulso(periodo: Periodo): Promise<PulsoData | null> {
   const res = await fetch(fastapiUrl(`/api/report/pulso?${qs}`), { headers: auth, cache: "no-store" });
   if (!res.ok) return null;
   return (await res.json()) as PulsoData;
+}
+
+export async function fetchTemasEstado(periodo: Periodo): Promise<TemasEstado | null> {
+  const auth = await authHeader();
+  if (!auth) return null;
+  const qs = new URLSearchParams({ desde: periodo.desde, hasta: periodo.hasta, rol: periodo.rol }).toString();
+  const res = await fetch(fastapiUrl(`/api/report/temas?${qs}`), { headers: auth, cache: "no-store" });
+  if (!res.ok) return null;
+  return (await res.json()) as TemasEstado;
 }
