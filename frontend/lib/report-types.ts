@@ -63,6 +63,36 @@ export interface TemasEstado {
   evolucion_semanal?: EvolucionSemanalPunto[];
 }
 
+export interface EstudianteRoster {
+  usuario: string;
+  nombre: string;
+}
+
+export interface EstudianteFila extends EstudianteRoster {
+  n_preguntas: number;
+  n_sesiones: number;
+  ultimos_temas: string[];
+}
+
+export interface EstudianteInactivo extends EstudianteRoster {
+  ultima_actividad: string | null;
+  dias_inactivo: number;
+}
+
+export interface Histograma {
+  "0": number;
+  "1-5": number;
+  "6-20": number;
+  "20+": number;
+}
+
+export interface EstudiantesData {
+  tabla: EstudianteFila[];
+  histograma: Histograma;
+  nunca_usado: EstudianteRoster[];
+  silenciosos: EstudianteInactivo[];
+}
+
 export interface ReportMeta {
   min_date: string | null;
   max_date: string | null;
