@@ -12,3 +12,19 @@ export function formatDuracion(minutos: number): string {
   const resto = Math.round(minutos % 60);
   return `${horas}h ${resto}min`;
 }
+
+// El backend manda fechas como "YYYY-MM-DD HH:MM:SS" (formato SQLite, sin
+// zona horaria) o "YYYY-MM-DD"; se parsea como texto para no arrastrar
+// desfaces de timezone al convertir a Date.
+export function formatFechaLarga(valor: string | null): string {
+  if (!valor) return "—";
+  const [fecha] = valor.split(" ");
+  const [anio, mes, dia] = fecha.split("-");
+  return `${dia}/${mes}/${anio}`;
+}
+
+export function formatFechaCorta(valor: string): string {
+  const [fecha] = valor.split(" ");
+  const [, mes, dia] = fecha.split("-");
+  return `${dia}/${mes}`;
+}

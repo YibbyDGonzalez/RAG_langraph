@@ -93,6 +93,31 @@ export interface EstudiantesData {
   silenciosos: EstudianteInactivo[];
 }
 
+export interface UltimaPregunta {
+  timestamp: string;
+  session_id: string;
+  pregunta: string;
+  respuesta: string;
+}
+
+export interface TimelinePunto {
+  dia: string;
+  n: number;
+}
+
+export interface EstudianteDetalle {
+  usuario: string;
+  nombre: string;
+  n_preguntas: number;
+  n_sesiones: number;
+  primera_actividad: string | null;
+  ultima_actividad: string | null;
+  ultimas_preguntas: UltimaPregunta[];
+  timeline: TimelinePunto[];
+  temas_tocados: string[];
+  temas_no_tocados: string[];
+}
+
 export interface ReportMeta {
   min_date: string | null;
   max_date: string | null;
