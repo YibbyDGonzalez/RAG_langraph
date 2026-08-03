@@ -14,7 +14,11 @@ interface EstudianteDetallePageProps {
 }
 
 export default async function EstudianteDetallePage({ params, searchParams }: EstudianteDetallePageProps) {
-  const { usuario } = await params;
+  const { usuario: usuarioParam } = await params;
+  // El segmento dinámico llega URL-encoded (ej. "%40" en vez de "@");
+  // decodificar antes de re-codificar para el fetch, si no queda doble
+  // codificado y el backend nunca encuentra al usuario.
+  const usuario = decodeURIComponent(usuarioParam);
   const sp = await searchParams;
   const meta = await fetchReportMeta();
 
