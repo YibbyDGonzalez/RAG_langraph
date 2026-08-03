@@ -52,7 +52,7 @@ export function LoginForm() {
               type="text"
               value={username}
               onChange={(e) => setUsername(e.target.value)}
-              placeholder="estudiante1"
+              placeholder="usuario@javeriana.edu.co"
               className="border border-border rounded-[9px] px-[13px] py-[11px] text-sm font-sans text-ink bg-surface outline-none"
             />
           </label>

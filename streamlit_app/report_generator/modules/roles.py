@@ -1,22 +1,59 @@
 """
 roles.py — Distingue Docente vs Estudiante a partir del username.
 
-No existe un campo de rol explícito en users.yaml: el rol se infiere del
-prefijo del username (ej. 'Docente3' -> Docente, 'Estudiante1' -> Estudiante),
-tal como se acordó al crear las cuentas de estudiante.
+Desde que los usuarios pasaron a loguearse con su correo, el rol ya no se
+puede inferir de un prefijo ('Docente3', 'Estudiante1'): se lee del campo
+explícito "rol" en users.yaml. Para los usernames viejos que quedaron en el
+histórico de `consultas` (de antes del cambio a correo), se cae al
+heurístico anterior por prefijo, así el reporte no pierde su clasificación.
 """
+import os
+import sys
+
+import yaml
+from yaml.loader import SafeLoader
+
+sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
+import config
 
 ROL_DOCENTE = "Docente"
 ROL_ESTUDIANTE = "Estudiante"
 
+_cache = {"mtime": None, "roles": {}}
+
+
+def _roles_por_usuario() -> dict:
+    """{usuario_en_minusculas: rol}, releído solo cuando cambia users.yaml."""
+    try:
+        mtime = os.path.getmtime(config.USERS_YAML_PATH)
+    except OSError:
+        return {}
+
+    if _cache["mtime"] != mtime:
+        with open(config.USERS_YAML_PATH) as f:
+            cfg = yaml.load(f, Loader=SafeLoader) or {}
+        usernames = cfg.get("credentials", {}).get("usernames", {})
+        _cache["roles"] = {
+            u.lower(): info.get("rol")
+            for u, info in usernames.items()
+        }
+        _cache["mtime"] = mtime
+
+    return _cache["roles"]
+
 
 def rol_de_usuario(usuario: str) -> str:
-    """Infiere el rol a partir del prefijo del username (case-insensitive).
-
-    Cualquier username que no empiece por 'docente' se trata como Estudiante,
-    para que el acceso a secciones restringidas a Docente sea deny-by-default.
+    """Rol explícito de users.yaml si la cuenta existe hoy; si no (username
+    histórico de antes del cambio a correo), infiere por prefijo 'docente'.
+    Cualquier caso no reconocido cae a Estudiante (deny-by-default para
+    secciones restringidas a Docente).
     """
     u = (usuario or "").strip().lower()
+
+    rol = _roles_por_usuario().get(u)
+    if rol in (ROL_DOCENTE, ROL_ESTUDIANTE):
+        return rol
+
     if u.startswith("docente"):
         return ROL_DOCENTE
     return ROL_ESTUDIANTE
