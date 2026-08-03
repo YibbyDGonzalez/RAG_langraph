@@ -1,5 +1,6 @@
 "use client";
 
+import Image from "next/image";
 import { usePathname, useRouter, useSearchParams } from "next/navigation";
 
 import type { RolFiltro } from "@/lib/report-types";
@@ -40,8 +41,8 @@ export function ReportSidebar({ teacherName, minDate, maxDate }: ReportSidebarPr
   return (
     <aside className="w-[280px] min-w-[280px] bg-surface-alt border-r border-border flex flex-col p-7 gap-8">
       <div className="flex items-center gap-3">
-        <div className="w-10 h-10 rounded-lg bg-navy text-surface flex items-center justify-center text-[10px] font-semibold font-mono text-center leading-tight">
-          PUJ
+        <div className="w-10 h-10 rounded-lg bg-surface border border-border flex items-center justify-center p-1 flex-shrink-0">
+          <Image src="/javeriana-crest.png" alt="Javeriana" width={32} height={32} className="w-full h-full object-contain" />
         </div>
         <div>
           <div className="text-[13px] font-semibold text-ink">Asistente MBE</div>

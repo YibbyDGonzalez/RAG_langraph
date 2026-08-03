@@ -1,5 +1,6 @@
 "use client";
 
+import Image from "next/image";
 import { useRouter } from "next/navigation";
 import { useState } from "react";
 
@@ -35,9 +36,14 @@ export function LoginForm() {
   return (
     <div className="min-h-screen w-full flex items-center justify-center bg-surface">
       <div className="w-[400px] bg-surface border border-border rounded-2xl p-10 flex flex-col items-center gap-[22px]">
-        <div className="w-12 h-12 rounded-[10px] bg-navy text-surface flex items-center justify-center text-[11px] font-semibold font-mono">
-          PUJ
-        </div>
+        <Image
+          src="/javeriana-full.png"
+          alt="Pontificia Universidad Javeriana"
+          width={72}
+          height={95}
+          className="h-[72px] w-auto"
+          priority
+        />
         <div className="text-center">
           <div className="text-xl font-semibold text-ink">Asistente MBE</div>
           <div className="text-[13px] text-ink-soft mt-1">

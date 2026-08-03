@@ -1,5 +1,6 @@
 "use client";
 
+import Image from "next/image";
 import Link from "next/link";
 
 import type { ConversationSummary } from "@/lib/types";
@@ -26,8 +27,8 @@ export function Sidebar({
   return (
     <aside className="w-[280px] min-w-[280px] bg-surface-alt border-r border-border flex flex-col p-[22px_18px] gap-5">
       <div className="flex items-center gap-3">
-        <div className="w-9 h-9 rounded-lg bg-navy text-surface flex items-center justify-center text-[10px] font-semibold font-mono">
-          PUJ
+        <div className="w-9 h-9 rounded-lg bg-surface border border-border flex items-center justify-center p-1 flex-shrink-0">
+          <Image src="/javeriana-crest.png" alt="Javeriana" width={28} height={28} className="w-full h-full object-contain" />
         </div>
         <div className="text-sm font-semibold">Asistente MBE</div>
       </div>
