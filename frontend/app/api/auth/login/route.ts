@@ -1,6 +1,6 @@
 import { cookies } from "next/headers";
 
-import { AUTH_COOKIE_MAX_AGE, AUTH_COOKIE_NAME } from "@/lib/auth-cookies";
+import { AUTH_COOKIE_MAX_AGE, AUTH_COOKIE_NAME, AUTH_COOKIE_SECURE } from "@/lib/auth-cookies";
 import { fastapiUrl } from "@/lib/fastapi";
 
 export async function POST(request: Request) {
@@ -25,7 +25,7 @@ export async function POST(request: Request) {
   const cookieStore = await cookies();
   cookieStore.set(AUTH_COOKIE_NAME, data.access_token, {
     httpOnly: true,
-    secure: process.env.NODE_ENV === "production",
+    secure: AUTH_COOKIE_SECURE,
     sameSite: "lax",
     path: "/",
     maxAge: AUTH_COOKIE_MAX_AGE,
