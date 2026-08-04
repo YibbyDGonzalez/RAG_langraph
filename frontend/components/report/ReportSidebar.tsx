@@ -104,8 +104,15 @@ export function ReportSidebar({ teacherName, minDate, maxDate }: ReportSidebarPr
         </div>
       </div>
 
-      <div className="mt-auto text-[11px] text-ink-muted leading-relaxed">
-        Vistas agregadas (Niveles 1–3). No incluyen identificación individual salvo tutoría explícita.
+      <div className="mt-auto flex flex-col gap-3">
+        <div className="text-[11px] text-ink-muted leading-relaxed">
+          Vistas agregadas (Niveles 1–3). No incluyen identificación individual salvo tutoría explícita.
+        </div>
+        <div className="text-[11px] text-ink-muted leading-relaxed border-t border-border pt-3">
+          <div className="font-semibold uppercase tracking-[0.04em] text-[10px] mb-1">Equipo</div>
+          <div>Estudiantes: Yibby Gonzalez y Sebastian Ruiz</div>
+          <div>Docente: Juan Pajaro</div>
+        </div>
       </div>
     </aside>
   );

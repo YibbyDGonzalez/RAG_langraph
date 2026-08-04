@@ -86,6 +86,12 @@ export function Sidebar({
           Cerrar sesión
         </button>
       </div>
+
+      <div className="text-[11px] text-ink-muted leading-relaxed border-t border-border pt-3 px-1">
+        <div className="font-semibold uppercase tracking-[0.04em] text-[10px] mb-1">Equipo</div>
+        <div>Estudiantes: Yibby Gonzalez y Sebastian Ruiz</div>
+        <div>Docente: Juan Pajaro</div>
+      </div>
     </aside>
   );
 }
