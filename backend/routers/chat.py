@@ -23,15 +23,25 @@ async def chat(payload: ChatRequest, request: Request, usuario: dict = Depends(g
     # `docker logs`, incluso si hay varias peticiones concurrentes.
     trace_id = uuid.uuid4().hex[:8]
 
+    # Turnos anteriores de esta conversación (vacío si es la primera pregunta).
+    # Sin esto, cada pregunta se responde aislada y los seguimientos ("cuáles
+    # son sus 3 componentes") fallan porque ni el retrieval ni el LLM saben
+    # de qué se venía hablando.
+    conversacion_previa = history_service.obtener_conversacion(usuario["username"], payload.conversation_id)
+    historial = conversacion_previa["messages"] if conversacion_previa else []
+
     def event_stream():
         t_total_start = time.time()
 
         print(
             f"📥 [{trace_id}] POST /chat | usuario={usuario['username']!r} "
-            f"session={payload.conversation_id!r} pregunta={payload.pregunta!r}"
+            f"session={payload.conversation_id!r} pregunta={payload.pregunta!r} "
+            f"historial={len(historial)} mensajes previos"
         )
 
-        stream = rag_service.responder(payload.pregunta, recursos=recursos, trace_id=trace_id)
+        stream = rag_service.responder(
+            payload.pregunta, recursos=recursos, trace_id=trace_id, historial=historial,
+        )
         meta = next(stream)  # primer yield: chunks/scores/latencias (no se envía al cliente)
 
         respuesta_completa = ""

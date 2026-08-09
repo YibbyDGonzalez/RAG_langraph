@@ -22,6 +22,39 @@ class GraphState(InputState, OutputState):
     context: str
 
 
+def _preparar_historial(historial: list[dict] | None) -> list[dict]:
+    """Recorta a los últimos 3 intercambios (6 mensajes) para no inflar el
+    prompt sin límite en conversaciones largas."""
+    if not historial:
+        return []
+    return historial[-6:]
+
+
+def _query_retrieval(historial: list[dict], query: str) -> str:
+    """El embedding de FAISS no entiende pronombres ni elipsis ('sus',
+    'el segundo', ...) si solo ve la pregunta nueva — por eso el retrieval de
+    un seguimiento aislado puede traer chunks irrelevantes aunque el LLM sí
+    tenga el historial en el prompt. Se arma la query de búsqueda con la
+    última pregunta del usuario + la pregunta actual.
+
+    Ojo: sumar también la última RESPUESTA del asistente empeora el
+    retrieval en la práctica — un párrafo largo de respuesta diluye el
+    embedding y desplaza el vector lejos del tema puntual del seguimiento."""
+    if not historial:
+        return query
+    ultima_pregunta = next((m["content"] for m in reversed(historial) if m["role"] == "user"), None)
+    if not ultima_pregunta:
+        return query
+    return f"{ultima_pregunta} {query}"
+
+
+def _bloque_historial(historial: list[dict]) -> str:
+    if not historial:
+        return ""
+    lineas = [f"{'Usuario' if m['role'] == 'user' else 'Asistente'}: {m['content']}" for m in historial]
+    return "HISTORIAL RECIENTE DE LA CONVERSACIÓN:\n" + "\n".join(lineas) + "\n\n"
+
+
 def build_graph(df, index, encoder, ollama_client):
     """Construye el grafo LangGraph con los recursos ya cargados."""
 
@@ -78,11 +111,17 @@ def responder_stream(query: str, *, df, index, encoder, ollama_client) -> Genera
 
 
 def responder_stream_logged(
-    query: str, *, df, index, encoder, ollama_client, trace_id: str | None = None
+    query: str, *, df, index, encoder, ollama_client, trace_id: str | None = None,
+    historial: list[dict] | None = None,
 ) -> Generator:
     """Pipeline RAG con streaming Y captura de metadata para logging.
     Primer yield: dict con chunks, scores y latencias de embedding+retrieval.
     Yields siguientes: tokens de texto del LLM en tiempo real.
+
+    `historial`: mensajes previos de la conversación ([{"role": "user"/
+    "assistant", "content": str}, ...], más antiguo primero). Sin esto cada
+    pregunta se resuelve aislada y los seguimientos ("cuáles son sus 3
+    componentes") fallan tanto en retrieval como en generación.
 
     Todas las líneas impresas llevan el mismo `trace_id` para poder seguir
     una consulta de punta a punta en `docker logs` aunque haya requests
@@ -93,11 +132,17 @@ def responder_stream_logged(
 
     trace_id = trace_id or uuid.uuid4().hex[:8]
     meta = {"trace_id": trace_id}
+    historial = _preparar_historial(historial)
 
-    # Paso 1: Embedding — tiempo aislado
+    # Paso 1: Embedding — tiempo aislado. Se embebe la query "enriquecida"
+    # con el turno anterior, no la pregunta cruda, para que el retrieval
+    # entienda seguimientos.
+    query_retrieval = _query_retrieval(historial, query)
     print(f"🧠 [{trace_id}] Generando embedding de la pregunta...")
+    if query_retrieval != query:
+        print(f"   💬 [{trace_id}] query retrieval (con historial): {query_retrieval!r}")
     t0 = time.time()
-    q_emb = encoder.encode([query], normalize_embeddings=True)
+    q_emb = encoder.encode([query_retrieval], normalize_embeddings=True)
     meta["lat_embedding"] = time.time() - t0
     print(f"✅ [{trace_id}] Embedding listo en {meta['lat_embedding']:.3f}s")
 
@@ -126,10 +171,12 @@ def responder_stream_logged(
         contexto += f"FUENTE: ({row['referencia']} — pág. {row['pagina']})\n{row['texto']}\n\n"
 
     prompt = (
+        f"{_bloque_historial(historial)}"
         f"PREGUNTA:\n{query}\n\n"
         f"CONTEXTO:\n{contexto}\n\n"
         f"Responde claro y, al citar, usa exactamente el texto entre paréntesis de cada "
-        f"FUENTE que uses (autor, título, año y página), y no inventes."
+        f"FUENTE que uses (autor, título, año y página), y no inventes. Si la pregunta hace "
+        f"referencia al historial reciente de la conversación, respóndela usando ese contexto."
     )
     print(f"✍️  [{trace_id}] Prompt listo ({len(prompt)} caracteres) — iniciando generación...")
 
