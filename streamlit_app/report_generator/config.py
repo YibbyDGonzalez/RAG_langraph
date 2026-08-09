@@ -38,6 +38,18 @@ USERS_YAML_PATH = os.path.join(
 # Número máximo de preguntas destacadas mostradas en el Nivel 2 (Temas)
 MAX_PREGUNTAS_DESTACADAS = 3
 
+# Clustering incremental de Temas (topic_store.py):
+# - no se ofrece "actualizar análisis" hasta que se acumulen al menos este
+#   número de preguntas nuevas sin clasificar (también el mínimo para el
+#   primer bootstrap de un scope, y para intentar sub-clusterizar el
+#   residual "Preguntas variadas").
+# - una pregunta nueva se clasifica en un tema existente si su similitud de
+#   coseno contra el centroide (embeddings crudos, sin UMAP) supera este
+#   umbral; si no, cae en el residual. Punto de partida razonable con
+#   MiniLM multilingüe — ajustar tras calibrar con datos reales de un semestre.
+TEMAS_MIN_PREGUNTAS_NUEVAS = 5
+TEMAS_SIMILITUD_UMBRAL = 0.55
+
 # Días de inactividad para considerar a un estudiante "silencioso" (Nivel 1 y 3)
 SILENCIO_DIAS = 14
 

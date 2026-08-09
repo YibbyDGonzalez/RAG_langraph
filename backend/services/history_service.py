@@ -28,8 +28,9 @@ def obtener_conversacion(usuario: str, conversation_id: str) -> dict | None:
 def registrar_intercambio(
     *, usuario: str, session_id: str, pregunta: str, meta: dict,
     respuesta: str, lat_llm: float, lat_total: float,
-):
-    log_consulta(
+) -> int | None:
+    """Retorna el id de la fila insertada en `consultas` (None si el log falló)."""
+    return log_consulta(
         usuario=usuario,
         session_id=session_id,
         pregunta=pregunta,

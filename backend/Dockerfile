@@ -4,6 +4,11 @@ FROM python:3.12-slim
 
 WORKDIR /app
 
+# Sin esto, stdout queda con buffer de bloque (no de línea) al no estar
+# conectado a una TTY, y los print() de logging por request no aparecen en
+# `docker logs` en tiempo real — se quedan atascados en el buffer.
+ENV PYTHONUNBUFFERED=1
+
 RUN apt-get update && apt-get install -y --no-install-recommends \
     build-essential \
     libgomp1 \

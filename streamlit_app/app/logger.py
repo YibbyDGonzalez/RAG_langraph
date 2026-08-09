@@ -78,11 +78,12 @@ def log_consulta(
     latencia_retrieval: float,
     latencia_llm: float,
     latencia_total: float,
-):
-    """Inserta una fila de log. Falla silenciosamente para no interrumpir al usuario."""
+) -> int | None:
+    """Inserta una fila de log y retorna su id. Falla silenciosamente (retorna
+    None) para no interrumpir al usuario."""
     try:
         conn = sqlite3.connect(DB_PATH, check_same_thread=False)
-        conn.execute("""
+        cur = conn.execute("""
             INSERT INTO consultas
             (usuario, session_id, pregunta, chunks_extraidos, scores_similitud,
              respuesta, latencia_embedding, latencia_retrieval, latencia_llm, latencia_total)
@@ -100,7 +101,10 @@ def log_consulta(
             round(latencia_total, 3),
         ))
         conn.commit()
+        row_id = cur.lastrowid
         conn.close()
+        return row_id
     except Exception as e:
         # Log silencioso: nunca interrumpir la experiencia del usuario
-        print(f"[logger] Error al guardar log: {e}")
+        print(f"❌ [logger] Error al guardar log: {e}")
+        return None

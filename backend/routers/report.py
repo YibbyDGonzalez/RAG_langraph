@@ -1,4 +1,4 @@
-from fastapi import APIRouter, Depends, HTTPException, Query, Request
+from fastapi import APIRouter, Depends, HTTPException, Query
 
 from backend.dependencies import require_role
 from backend.services import report_service
@@ -14,17 +14,15 @@ async def meta():
 
 @router.get("/pulso")
 async def pulso(
-    request: Request,
     desde: str = Query(...),
     hasta: str = Query(...),
     rol: str = Query("todos"),
 ):
-    return report_service.pulso(desde, hasta, rol, request.app.state.temas_cache)
+    return report_service.pulso(desde, hasta, rol)
 
 
 @router.post("/temas/generate")
 async def generar_temas(
-    request: Request,
     desde: str = Query(...),
     hasta: str = Query(...),
     rol: str = Query("todos"),
@@ -36,42 +34,39 @@ async def generar_temas(
             detail="GROQ_API_KEY no configurada; el análisis de temas no está disponible.",
         )
     try:
-        report_service.generar_temas(desde, hasta, rol, groq_key, request.app.state.temas_cache)
+        report_service.generar_temas(desde, hasta, rol, groq_key)
     except report_service.DatosInsuficientes as e:
         raise HTTPException(
             status_code=422,
             detail=f"Se necesitan al menos 5 preguntas para el análisis (período actual: {e.n}).",
         )
-    # Mismo shape que GET /temas (incluye evolucion_semanal), ya con la caché poblada.
-    return report_service.estado_temas(desde, hasta, rol, request.app.state.temas_cache)
+    # Mismo shape que GET /temas (incluye evolucion_semanal), ya con los temas actualizados.
+    return report_service.estado_temas(desde, hasta, rol)
 
 
 @router.get("/temas")
 async def estado_temas(
-    request: Request,
     desde: str = Query(...),
     hasta: str = Query(...),
     rol: str = Query("todos"),
 ):
-    return report_service.estado_temas(desde, hasta, rol, request.app.state.temas_cache)
+    return report_service.estado_temas(desde, hasta, rol)
 
 
 @router.get("/estudiantes")
 async def estudiantes(
-    request: Request,
     desde: str = Query(...),
     hasta: str = Query(...),
     rol: str = Query("todos"),
 ):
-    return report_service.estudiantes(desde, hasta, rol, request.app.state.temas_cache)
+    return report_service.estudiantes(desde, hasta, rol)
 
 
 @router.get("/estudiantes/{usuario}")
 async def estudiante_detalle(
     usuario: str,
-    request: Request,
     desde: str = Query(...),
     hasta: str = Query(...),
     rol: str = Query("todos"),
 ):
-    return report_service.estudiante_detalle(usuario, desde, hasta, rol, request.app.state.temas_cache)
+    return report_service.estudiante_detalle(usuario, desde, hasta, rol)

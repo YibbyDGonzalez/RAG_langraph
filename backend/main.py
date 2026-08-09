@@ -19,15 +19,18 @@ async def lifespan(app: FastAPI):
     from logger import init_db
 
     init_db()
+
+    from report_generator.modules.topic_store import init_db as init_temas_db
+
+    from backend.services.report_service import DB_PATH as TEMAS_DB_PATH
+
+    init_temas_db(TEMAS_DB_PATH)
+
     app.state.resources = rag_service.cargar_recursos()
-    # Caché del análisis de temas (embeddings + Groq, 1-3 min), llave
-    # (desde, hasta, rol) — bajo demanda, igual que en Streamlit.
-    app.state.temas_cache = {}
 
     yield
 
     app.state.resources = {}
-    app.state.temas_cache = {}
 
 
 app = FastAPI(title="Asistente MBE API", lifespan=lifespan)

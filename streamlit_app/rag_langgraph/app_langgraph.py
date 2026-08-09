@@ -30,13 +30,17 @@ def build_graph(df, index, encoder, ollama_client):
         articulos = buscar_articulos(query, top_k=3, encoder=encoder, index=index, df=df)
         contexto = ""
         for _, row in articulos.iterrows():
-            contexto += f"ARTÍCULO {row['id_articulo']} - {row['titulo']}\n{row['texto']}\n\n"
+            contexto += f"FUENTE: ({row['referencia']} — pág. {row['pagina']})\n{row['texto']}\n\n"
         return {"context": contexto}
 
     def generation_node(state: GraphState):
         query = state["query"]
         contexto = state["context"]
-        prompt = f"PREGUNTA:\n{query}\n\nCONTEXTO:\n{contexto}\n\nResponde claro, cita paginas y no inventes."
+        prompt = (
+            f"PREGUNTA:\n{query}\n\nCONTEXTO:\n{contexto}\n\n"
+            f"Responde claro y, al citar, usa exactamente el texto entre paréntesis de cada "
+            f"FUENTE que uses (autor, título, año y página), y no inventes."
+        )
         respuesta = call_ollama(prompt, ollama_client=ollama_client)
         return {"response": respuesta}
 
@@ -62,28 +66,43 @@ def responder_stream(query: str, *, df, index, encoder, ollama_client) -> Genera
     articulos = buscar_articulos(query, top_k=3, encoder=encoder, index=index, df=df)
     contexto = ""
     for _, row in articulos.iterrows():
-        contexto += f"ARTÍCULO {row['id_articulo']} - {row['titulo']}\n{row['texto']}\n\n"
+        contexto += f"FUENTE: ({row['referencia']} — pág. {row['pagina']})\n{row['texto']}\n\n"
 
     # Paso 2: generacion en streaming (el usuario ve tokens desde el primer segundo)
-    prompt = f"PREGUNTA:\n{query}\n\nCONTEXTO:\n{contexto}\n\nResponde claro, cita paginas y no inventes."
+    prompt = (
+        f"PREGUNTA:\n{query}\n\nCONTEXTO:\n{contexto}\n\n"
+        f"Responde claro y, al citar, usa exactamente el texto entre paréntesis de cada "
+        f"FUENTE que uses (autor, título, año y página), y no inventes."
+    )
     yield from call_ollama_stream(prompt, ollama_client=ollama_client)
 
 
-def responder_stream_logged(query: str, *, df, index, encoder, ollama_client) -> Generator:
+def responder_stream_logged(
+    query: str, *, df, index, encoder, ollama_client, trace_id: str | None = None
+) -> Generator:
     """Pipeline RAG con streaming Y captura de metadata para logging.
     Primer yield: dict con chunks, scores y latencias de embedding+retrieval.
-    Yields siguientes: tokens de texto del LLM en tiempo real."""
+    Yields siguientes: tokens de texto del LLM en tiempo real.
+
+    Todas las líneas impresas llevan el mismo `trace_id` para poder seguir
+    una consulta de punta a punta en `docker logs` aunque haya requests
+    concurrentes intercalados."""
     import time
+    import uuid
     import numpy as np
 
-    meta = {}
+    trace_id = trace_id or uuid.uuid4().hex[:8]
+    meta = {"trace_id": trace_id}
 
     # Paso 1: Embedding — tiempo aislado
+    print(f"🧠 [{trace_id}] Generando embedding de la pregunta...")
     t0 = time.time()
     q_emb = encoder.encode([query], normalize_embeddings=True)
     meta["lat_embedding"] = time.time() - t0
+    print(f"✅ [{trace_id}] Embedding listo en {meta['lat_embedding']:.3f}s")
 
     # Paso 2: Busqueda FAISS — tiempo aislado
+    print(f"🔍 [{trace_id}] Buscando en FAISS (top_k=3)...")
     t1 = time.time()
     scores, idxs = index.search(np.array(q_emb).astype("float32"), 3)
     meta["lat_retrieval"] = time.time() - t1
@@ -91,24 +110,34 @@ def responder_stream_logged(query: str, *, df, index, encoder, ollama_client) ->
     articulos = df.iloc[idxs[0]].copy()
     articulos["score"] = scores[0]
 
-    meta["chunks"] = articulos[["id_articulo", "titulo", "texto"]].to_dict("records")
+    print(f"📚 [{trace_id}] {len(articulos)} documentos recuperados en {meta['lat_retrieval']:.3f}s:")
+    for _, row in articulos.iterrows():
+        print(
+            f"   📄 [{trace_id}] fuente={row['fuente_pdf']!r} "
+            f"pág={row['pagina']} score={row['score']:.4f}"
+        )
+
+    meta["chunks"] = articulos[["chunk_id", "fuente_pdf", "referencia", "pagina", "texto"]].to_dict("records")
     meta["scores"] = scores[0].tolist()
 
     # Paso 3: Construir contexto y prompt
     contexto = ""
     for _, row in articulos.iterrows():
-        contexto += f"ARTÍCULO {row['id_articulo']} - {row['titulo']}\n{row['texto']}\n\n"
+        contexto += f"FUENTE: ({row['referencia']} — pág. {row['pagina']})\n{row['texto']}\n\n"
 
     prompt = (
         f"PREGUNTA:\n{query}\n\n"
         f"CONTEXTO:\n{contexto}\n\n"
-        f"Responde claro, cita paginas y no inventes."
+        f"Responde claro y, al citar, usa exactamente el texto entre paréntesis de cada "
+        f"FUENTE que uses (autor, título, año y página), y no inventes."
     )
+    print(f"✍️  [{trace_id}] Prompt listo ({len(prompt)} caracteres) — iniciando generación...")
 
     meta["llm_start"] = time.time()
 
-    # Primer yield: metadata (capturado en app.py antes de iniciar el stream)
+    # Primer yield: metadata (capturado en chat.py antes de iniciar el stream)
     yield meta
 
     # Yields siguientes: tokens del LLM
+    print(f"🤖 [{trace_id}] Generando respuesta (streaming)...")
     yield from call_ollama_stream(prompt, ollama_client=ollama_client)

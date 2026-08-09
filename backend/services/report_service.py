@@ -1,9 +1,9 @@
 """Wrapea streamlit_app/report_generator/modules/* para el reporte docente.
 
-No reimplementa el análisis (KPIs, alertas, temas, roster): lo importa tal
-cual corre hoy en Streamlit (app/pages/reporte.py). La única diferencia de
-comportamiento a propósito es que la caché de temas se invalida por
-(desde, hasta, rol) — en Streamlit no incluía el rol en la llave.
+No reimplementa el análisis (KPIs, alertas, roster): lo importa tal cual corre
+hoy en Streamlit (app/pages/reporte.py). Los "Temas" son la excepción: usan
+topic_store.py, una taxonomía persistente en SQLite por rol (no por rango de
+fechas) en vez de recalcular el clustering en cada request.
 """
 import os
 import sqlite3
@@ -12,11 +12,13 @@ import pandas as pd
 
 from backend import bootstrap  # noqa: F401
 
+from report_generator.config import TEMAS_MIN_PREGUNTAS_NUEVAS
+from report_generator.modules import topic_store
 from report_generator.modules.alerts import detectar_tema_en_alza, generar_alertas
 from report_generator.modules.data_loader import load_data_con_periodo_anterior, load_data_historico
 from report_generator.modules.deltas import kpis_con_delta, sparkline_semanal
 from report_generator.modules.retrieval_quality import temas_con_retrieval_debil
-from report_generator.modules.roles import ROL_DOCENTE, ROL_ESTUDIANTE, rol_de_usuario
+from report_generator.modules.roles import filtrar_por_rol
 from report_generator.modules.roster import (
     cargar_roster,
     nunca_usado as calcular_nunca_usado,
@@ -25,11 +27,9 @@ from report_generator.modules.roster import (
 from report_generator.modules.student_detail import detalle_estudiante as _detalle_estudiante
 from report_generator.modules.students import histograma_esfuerzo, tabla_estudiantes
 from report_generator.modules.temporal_analysis import compute_temporal_stats, formatear_duracion
-from report_generator.modules.topic_analysis import compute_topics_detallado, evolucion_semanal_por_tema
+from report_generator.modules.topic_analysis import evolucion_semanal_por_tema, resumen_temas
 
 DB_PATH = os.getenv("LOGS_DB_PATH", "data/logs/mbe_logs.db")
-
-ROL_QUERY_A_ROL = {"docentes": ROL_DOCENTE, "estudiantes": ROL_ESTUDIANTE}
 
 
 class DatosInsuficientes(Exception):
@@ -58,25 +58,17 @@ def rango_fechas() -> dict:
     }
 
 
-def _filtrar_por_rol(df: pd.DataFrame, rol: str) -> pd.DataFrame:
-    rol_objetivo = ROL_QUERY_A_ROL.get(rol)
-    if rol_objetivo is None or df.empty:
-        return df
-    mascara = df["usuario"].astype(str).map(rol_de_usuario) == rol_objetivo
-    return df[mascara].reset_index(drop=True)
-
-
 def _cargar(desde: str, hasta: str, rol: str):
     df_actual, df_anterior = load_data_con_periodo_anterior(DB_PATH, desde, hasta)
     df_historico = load_data_historico(DB_PATH)
     return (
-        _filtrar_por_rol(df_actual, rol),
-        _filtrar_por_rol(df_anterior, rol),
-        _filtrar_por_rol(df_historico, rol),
+        filtrar_por_rol(df_actual, rol),
+        filtrar_por_rol(df_anterior, rol),
+        filtrar_por_rol(df_historico, rol),
     )
 
 
-def pulso(desde: str, hasta: str, rol: str, temas_cache: dict) -> dict:
+def pulso(desde: str, hasta: str, rol: str) -> dict:
     df_actual, df_anterior, df_historico = _cargar(desde, hasta, rol)
     roster = cargar_roster()
 
@@ -87,12 +79,12 @@ def pulso(desde: str, hasta: str, rol: str, temas_cache: dict) -> dict:
 
     sparkline_data = sparkline_semanal(df_historico, hasta, semanas=4)
 
-    resultado = temas_cache.get((desde, hasta, rol))
-    mapeo_temas = resultado["mapeo_pregunta_tema"] if resultado else {}
+    scope = topic_store.estado_scope(rol, DB_PATH)
+    mapeo_temas = topic_store.mapeo_pregunta_tema(rol, DB_PATH) if scope["existe"] else {}
 
     tema_en_alza = None
     temas_debiles = []
-    if resultado and resultado["temas"]:
+    if mapeo_temas:
         evolucion = evolucion_semanal_por_tema(df_actual, mapeo_temas)
         tema_en_alza = detectar_tema_en_alza(evolucion)
         temas_debiles = temas_con_retrieval_debil(df_actual, mapeo_temas)
@@ -112,27 +104,29 @@ def pulso(desde: str, hasta: str, rol: str, temas_cache: dict) -> dict:
         "sparkline": sparkline_data,
         "temporal": temporal_actual,
         "alertas": alertas,
-        "temas_generados": bool(resultado),
+        "temas_generados": scope["existe"],
         "total_estudiantes": len(roster),
     }
 
 
-def generar_temas(desde: str, hasta: str, rol: str, groq_api_key: str, temas_cache: dict) -> dict:
-    df_actual, _, _ = _cargar(desde, hasta, rol)
-    if len(df_actual) < 5:
-        raise DatosInsuficientes(len(df_actual))
-    resultado = compute_topics_detallado(list(df_actual["pregunta"]), groq_api_key)
-    temas_cache[(desde, hasta, rol)] = resultado
-    return resultado
+def generar_temas(desde: str, hasta: str, rol: str, groq_api_key: str) -> dict:
+    if not topic_store.estado_scope(rol, DB_PATH)["existe"]:
+        n = topic_store.contar_pendientes(rol, DB_PATH)
+        if n < TEMAS_MIN_PREGUNTAS_NUEVAS:
+            raise DatosInsuficientes(n)
+    topic_store.actualizar_scope(rol, groq_api_key, DB_PATH)
+    return estado_temas(desde, hasta, rol)
 
 
-def estado_temas(desde: str, hasta: str, rol: str, temas_cache: dict) -> dict:
-    resultado = temas_cache.get((desde, hasta, rol))
-    if not resultado:
+def estado_temas(desde: str, hasta: str, rol: str) -> dict:
+    scope = topic_store.estado_scope(rol, DB_PATH)
+    if not scope["existe"]:
         return {"status": "idle"}
 
+    mapeo = topic_store.mapeo_pregunta_tema(rol, DB_PATH)
     df_actual, _, _ = _cargar(desde, hasta, rol)
-    evolucion = evolucion_semanal_por_tema(df_actual, resultado["mapeo_pregunta_tema"])
+    temas = resumen_temas(df_actual, mapeo)
+    evolucion = evolucion_semanal_por_tema(df_actual, mapeo)
     evolucion_json = [
         {"semana": str(idx), **{str(col): int(v) for col, v in row.items()}}
         for idx, row in evolucion.iterrows()
@@ -140,17 +134,16 @@ def estado_temas(desde: str, hasta: str, rol: str, temas_cache: dict) -> dict:
 
     return {
         "status": "generado",
-        "temas": resultado["temas"],
-        "preguntas_destacadas": resultado["preguntas_destacadas"],
+        "temas": temas,
+        "preguntas_destacadas": scope["destacadas"],
         "evolucion_semanal": evolucion_json,
     }
 
 
-def estudiantes(desde: str, hasta: str, rol: str, temas_cache: dict) -> dict:
+def estudiantes(desde: str, hasta: str, rol: str) -> dict:
     df_actual, _, df_historico = _cargar(desde, hasta, rol)
     roster = cargar_roster()
-    resultado = temas_cache.get((desde, hasta, rol))
-    mapeo_temas = resultado["mapeo_pregunta_tema"] if resultado else {}
+    mapeo_temas = topic_store.mapeo_pregunta_tema(rol, DB_PATH)
 
     tabla = tabla_estudiantes(df_actual, mapeo_temas, roster)
 
@@ -162,9 +155,8 @@ def estudiantes(desde: str, hasta: str, rol: str, temas_cache: dict) -> dict:
     }
 
 
-def estudiante_detalle(usuario: str, desde: str, hasta: str, rol: str, temas_cache: dict) -> dict:
-    resultado = temas_cache.get((desde, hasta, rol))
-    mapeo_temas = resultado["mapeo_pregunta_tema"] if resultado else {}
+def estudiante_detalle(usuario: str, desde: str, hasta: str, rol: str) -> dict:
+    mapeo_temas = topic_store.mapeo_pregunta_tema(rol, DB_PATH)
 
     usuario_norm = usuario.lower()
     roster = cargar_roster()

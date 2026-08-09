@@ -13,7 +13,7 @@ def cargar_recursos() -> dict:
     return {"df": df, "index": index, "encoder": encoder, "groq_client": groq_client}
 
 
-def responder(pregunta: str, *, recursos: dict):
+def responder(pregunta: str, *, recursos: dict, trace_id: str | None = None):
     """Generator: primer yield es dict de metadata (chunks/scores/latencias),
     los siguientes son tokens de texto de la respuesta."""
     return responder_stream_logged(
@@ -22,4 +22,5 @@ def responder(pregunta: str, *, recursos: dict):
         index=recursos["index"],
         encoder=recursos["encoder"],
         ollama_client=recursos["groq_client"],
+        trace_id=trace_id,
     )

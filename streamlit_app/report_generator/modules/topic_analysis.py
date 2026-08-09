@@ -2,13 +2,14 @@ import json
 import math
 import re
 import sys
+import time
 import os
 
 import numpy as np
 import pandas as pd
 from sentence_transformers import SentenceTransformer
 import umap
-from groq import Groq
+from groq import APIStatusError, Groq
 from sklearn.cluster import KMeans
 
 # sklearn ≥1.3 incluye HDBSCAN; si no, usar el paquete standalone
@@ -33,17 +34,31 @@ def _deduplicar(preguntas: list) -> list:
     return preguntas_unicas
 
 
-def _clusterizar(preguntas_unicas: list) -> np.ndarray:
-    """
-    Embeddings multilingües → UMAP → HDBSCAN (KMeans como fallback).
-    Retorna un array de labels alineado por índice con preguntas_unicas.
-    """
-    print("    Cargando modelo de embeddings...")
-    model = SentenceTransformer(config.EMBEDDING_MODEL)
-    print("    Generando embeddings (puede tardar un momento)...")
-    embeddings = model.encode(preguntas_unicas, show_progress_bar=True, batch_size=32)
+_MODEL_CACHE: dict = {}
 
-    n = len(preguntas_unicas)
+
+def generar_embeddings(preguntas_unicas: list) -> np.ndarray:
+    """
+    Genera embeddings multilingües para una lista de preguntas.
+
+    El modelo se carga una sola vez por proceso (cacheado en _MODEL_CACHE);
+    llamadas repetidas dentro del mismo proceso lo reusan.
+    """
+    modelo = _MODEL_CACHE.get(config.EMBEDDING_MODEL)
+    if modelo is None:
+        print("    Cargando modelo de embeddings...")
+        modelo = SentenceTransformer(config.EMBEDDING_MODEL)
+        _MODEL_CACHE[config.EMBEDDING_MODEL] = modelo
+    print("    Generando embeddings (puede tardar un momento)...")
+    return modelo.encode(preguntas_unicas, show_progress_bar=True, batch_size=32)
+
+
+def _clusterizar_embeddings(embeddings: np.ndarray) -> np.ndarray:
+    """
+    UMAP → HDBSCAN (KMeans como fallback) sobre embeddings ya calculados.
+    Retorna un array de labels alineado por índice con `embeddings`.
+    """
+    n = len(embeddings)
     n_neighbors = min(15, n - 1)
     n_components = min(config.UMAP_N_COMPONENTS, n - 2)
     print(f"    Reduciendo dimensiones con UMAP ({n_components}D)...")
@@ -72,6 +87,14 @@ def _clusterizar(preguntas_unicas: list) -> np.ndarray:
         labels = kmeans.fit_predict(reduced)
 
     return labels
+
+
+def _clusterizar(preguntas_unicas: list) -> np.ndarray:
+    """
+    Embeddings multilingües → UMAP → HDBSCAN (KMeans como fallback).
+    Retorna un array de labels alineado por índice con preguntas_unicas.
+    """
+    return _clusterizar_embeddings(generar_embeddings(preguntas_unicas))
 
 
 def compute_topics(preguntas: list, groq_api_key: str) -> list:
@@ -219,14 +242,63 @@ def _bloques_clusters(clusters: list) -> str:
     return "\n\n".join(bloques)
 
 
+# Máximo de clusters por llamada a Groq. Los llamadores le pasan hasta 8
+# preguntas por cluster (ver compute_topics_detallado y
+# topic_store._subclusterizar_residual); un lote de 10 clusters se queda
+# cómodamente bajo el límite de 6000 tokens/minuto (TPM) del tier gratuito
+# de Groq para llama-3.1-8b-instant. Con más clusters en una sola llamada,
+# Groq responde 413/429 y el nombrado fallaba en silencio para TODOS los
+# clusters de esa llamada.
+_MAX_CLUSTERS_POR_LLAMADA = 10
+
+
+def _crear_completion_con_reintento(groq_client: Groq, **kwargs):
+    """
+    Llama a Groq; si responde rate limit por tokens-por-minuto (413/429),
+    espera y reintenta una sola vez. El TPM de Groq es una ventana rodante
+    de un minuto: cuando se procesan varios lotes de clusters seguidos, un
+    lote temprano puede agotar el presupuesto y hacer fallar a los
+    siguientes aunque cada uno, aislado, esté bien por debajo del límite.
+    """
+    try:
+        return groq_client.chat.completions.create(**kwargs)
+    except APIStatusError as e:
+        if e.status_code not in (413, 429):
+            raise
+        print(f"    Rate limit de Groq (status {e.status_code}), reintentando en 20s...")
+        time.sleep(20)
+        return groq_client.chat.completions.create(**kwargs)
+
+
 def _nombrar_clusters(clusters: list, groq_client: Groq) -> dict:
     """
-    Una sola llamada al LLM con todos los clusters en contexto para que
-    genere títulos diferenciados entre sí.
+    Nombra todos los clusters, batiendo en varias llamadas al LLM si hace
+    falta para no exceder el límite de tokens por minuto de Groq.
+
+    Cada lote se renumera a ids locales 0..n-1 antes de mandarlo (y se
+    remapea a los ids originales al volver): el prompt siempre muestra un
+    ejemplo de formato con ids "0, 1, ...", y con ids reales no consecutivos
+    desde 0 (p.ej. un segundo lote con ids 10, 11, 12) el modelo tiende a
+    contestar con ids "0, 1, 2" en vez de los reales, y esos clusters
+    terminan sin nombre aunque la llamada no haya fallado.
 
     clusters: [(id, [preguntas...]), ...]
     Retorna: {id: titulo}
     """
+    nombres_map = {}
+    for i in range(0, len(clusters), _MAX_CLUSTERS_POR_LLAMADA):
+        lote = clusters[i : i + _MAX_CLUSTERS_POR_LLAMADA]
+        ids_originales = [cid for cid, _ in lote]
+        lote_local = list(enumerate(preguntas for _, preguntas in lote))
+        nombres_locales = _nombrar_clusters_lote(lote_local, groq_client)
+        for idx_local, id_original in enumerate(ids_originales):
+            if idx_local in nombres_locales:
+                nombres_map[id_original] = nombres_locales[idx_local]
+    return nombres_map
+
+
+def _nombrar_clusters_lote(clusters: list, groq_client: Groq) -> dict:
+    """Una sola llamada al LLM para nombrar un lote de clusters (ver _nombrar_clusters)."""
     prompt = (
         "Eres un asistente académico. A continuación se presentan los grupos de preguntas "
         "formuladas por estudiantes de medicina.\n"
@@ -240,10 +312,11 @@ def _nombrar_clusters(clusters: list, groq_client: Groq) -> dict:
         + _bloques_clusters(clusters)
     )
     try:
-        resp = groq_client.chat.completions.create(
+        resp = _crear_completion_con_reintento(
+            groq_client,
             model=config.GROQ_MODEL,
             messages=[{"role": "user", "content": prompt}],
-            max_tokens=300,
+            max_tokens=max(300, 120 * len(clusters)),
             temperature=0.3,
         )
         raw = resp.choices[0].message.content.strip()
@@ -291,7 +364,7 @@ def _nombrar_clusters_y_destacar(clusters: list, preguntas_unicas: list, groq_cl
         resp = groq_client.chat.completions.create(
             model=config.GROQ_MODEL,
             messages=[{"role": "user", "content": prompt}],
-            max_tokens=500,
+            max_tokens=max(500, 120 * len(clusters) + 400),
             temperature=0.3,
         )
         raw = resp.choices[0].message.content.strip()
@@ -309,6 +382,40 @@ def _nombrar_clusters_y_destacar(clusters: list, preguntas_unicas: list, groq_cl
     except Exception as e:
         print(f"    Advertencia al nombrar clusters y elegir destacadas: {e}")
         return {}, []
+
+
+def resumen_temas(df: pd.DataFrame, tema_por_pregunta: dict) -> list:
+    """
+    Arma la lista de temas (nombre, n_preguntas, pct, ejemplos) a partir de un
+    `df` ya filtrado por rango de fechas/rol y del mapeo pregunta -> tema
+    persistido (topic_store.mapeo_pregunta_tema()). Es el equivalente de la
+    porción "construir lista de temas" de compute_topics_detallado(), pero
+    sobre asignaciones ya calculadas en vez de un clustering fresco.
+    """
+    if df.empty or not tema_por_pregunta:
+        return []
+
+    df = df.copy()
+    df["tema"] = df["pregunta"].str.strip().map(
+        lambda p: tema_por_pregunta.get(p, {}).get("nombre_tema")
+    )
+    df = df.dropna(subset=["tema"])
+    if df.empty:
+        return []
+
+    total = len(df)
+    temas = []
+    for nombre, grupo in df.groupby("tema"):
+        preguntas = grupo["pregunta"].str.strip().tolist()
+        temas.append({
+            "nombre": nombre,
+            "n_preguntas": len(grupo),
+            "pct": round(len(grupo) / total * 100, 1),
+            "ejemplos": preguntas[-config.MAX_EJEMPLOS_POR_TEMA:],
+        })
+
+    temas.sort(key=lambda x: x["n_preguntas"], reverse=True)
+    return temas
 
 
 def evolucion_semanal_por_tema(df: pd.DataFrame, tema_por_pregunta: dict) -> pd.DataFrame:

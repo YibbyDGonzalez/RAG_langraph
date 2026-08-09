@@ -10,6 +10,7 @@ heurístico anterior por prefijo, así el reporte no pierde su clasificación.
 import os
 import sys
 
+import pandas as pd
 import yaml
 from yaml.loader import SafeLoader
 
@@ -18,6 +19,8 @@ import config
 
 ROL_DOCENTE = "Docente"
 ROL_ESTUDIANTE = "Estudiante"
+
+ROL_QUERY_A_ROL = {"docentes": ROL_DOCENTE, "estudiantes": ROL_ESTUDIANTE}
 
 _cache = {"mtime": None, "roles": {}}
 
@@ -57,3 +60,12 @@ def rol_de_usuario(usuario: str) -> str:
     if u.startswith("docente"):
         return ROL_DOCENTE
     return ROL_ESTUDIANTE
+
+
+def filtrar_por_rol(df: pd.DataFrame, rol: str) -> pd.DataFrame:
+    """Filtra un DataFrame de `consultas` por rol ('docentes'/'estudiantes'/'todos')."""
+    rol_objetivo = ROL_QUERY_A_ROL.get(rol)
+    if rol_objetivo is None or df.empty:
+        return df
+    mascara = df["usuario"].astype(str).map(rol_de_usuario) == rol_objetivo
+    return df[mascara].reset_index(drop=True)
