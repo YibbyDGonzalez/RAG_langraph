@@ -41,7 +41,7 @@ export function Sidebar({
         + Nueva conversación
       </button>
 
-      <div className="flex flex-col gap-2 flex-1 overflow-y-auto">
+      <div className="flex flex-col gap-2 flex-1 min-h-0 overflow-y-auto">
         <div className="text-[11px] font-semibold tracking-[0.04em] uppercase text-ink-muted px-1">
           Conversaciones
         </div>
