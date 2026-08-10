@@ -3,10 +3,9 @@ import { NuncaUsadoCard } from "@/components/report/NuncaUsadoCard";
 import { RosterTable } from "@/components/report/RosterTable";
 import { SilenciososCard } from "@/components/report/SilenciososCard";
 import { fetchEstudiantes, fetchReportMeta } from "@/lib/report-api";
-import type { RolFiltro } from "@/lib/report-types";
 
 interface EstudiantesPageProps {
-  searchParams: Promise<{ desde?: string; hasta?: string; rol?: string }>;
+  searchParams: Promise<{ desde?: string; hasta?: string }>;
 }
 
 export default async function EstudiantesPage({ searchParams }: EstudiantesPageProps) {
@@ -15,18 +14,17 @@ export default async function EstudiantesPage({ searchParams }: EstudiantesPageP
 
   const desde = params.desde ?? meta?.min_date ?? "";
   const hasta = params.hasta ?? meta?.max_date ?? "";
-  const rol = (params.rol as RolFiltro) ?? "todos";
 
   if (!desde || !hasta) {
     return <div className="text-sm text-ink-soft">No hay datos disponibles todavía.</div>;
   }
 
-  const data = await fetchEstudiantes({ desde, hasta, rol });
+  const data = await fetchEstudiantes({ desde, hasta });
   if (!data) {
     return <div className="text-sm text-danger">No se pudo cargar la vista de Estudiantes.</div>;
   }
 
-  const queryString = new URLSearchParams({ desde, hasta, rol }).toString();
+  const queryString = new URLSearchParams({ desde, hasta }).toString();
 
   return (
     <div className="flex flex-col gap-[22px]">

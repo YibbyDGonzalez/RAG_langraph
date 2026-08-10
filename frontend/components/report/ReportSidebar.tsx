@@ -3,14 +3,6 @@
 import Image from "next/image";
 import { usePathname, useRouter, useSearchParams } from "next/navigation";
 
-import type { RolFiltro } from "@/lib/report-types";
-
-const ROL_OPTIONS: { id: RolFiltro; label: string }[] = [
-  { id: "todos", label: "Todos" },
-  { id: "docentes", label: "Solo docentes" },
-  { id: "estudiantes", label: "Solo estudiantes" },
-];
-
 interface ReportSidebarProps {
   teacherName: string;
   minDate: string | null;
@@ -24,7 +16,6 @@ export function ReportSidebar({ teacherName, minDate, maxDate }: ReportSidebarPr
 
   const desde = searchParams.get("desde") ?? minDate ?? "";
   const hasta = searchParams.get("hasta") ?? maxDate ?? "";
-  const rol = (searchParams.get("rol") as RolFiltro) ?? "todos";
 
   function updateParams(patch: Record<string, string>) {
     const params = new URLSearchParams(searchParams.toString());
@@ -85,23 +76,6 @@ export function ReportSidebar({ teacherName, minDate, maxDate }: ReportSidebarPr
             className="border border-border rounded-lg px-2.5 py-2 text-[13px] font-sans text-ink bg-surface"
           />
         </label>
-      </div>
-
-      <div className="flex flex-col gap-2.5">
-        <div className="text-[11px] font-semibold tracking-[0.04em] uppercase text-ink-muted">Quién pregunta</div>
-        <div className="flex flex-col gap-1.5 bg-surface border border-border rounded-[10px] p-1">
-          {ROL_OPTIONS.map((opt) => (
-            <button
-              key={opt.id}
-              onClick={() => updateParams({ rol: opt.id })}
-              className={`px-2.5 py-2 text-[13px] font-medium rounded-md text-left cursor-pointer border-none ${
-                rol === opt.id ? "bg-surface-selected text-navy" : "bg-transparent text-ink-soft"
-              }`}
-            >
-              {opt.label}
-            </button>
-          ))}
-        </div>
       </div>
 
       <div className="mt-auto flex flex-col gap-3">

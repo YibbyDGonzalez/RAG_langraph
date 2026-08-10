@@ -1,5 +1,3 @@
-export type RolFiltro = "todos" | "docentes" | "estudiantes";
-
 export interface KpiValor {
   valor: number;
   delta_pct: number | null;

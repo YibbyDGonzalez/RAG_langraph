@@ -5,7 +5,6 @@ import type {
   MeInfo,
   PulsoData,
   ReportMeta,
-  RolFiltro,
   TemasEstado,
 } from "@/lib/report-types";
 
@@ -28,13 +27,12 @@ export async function fetchReportMeta(): Promise<ReportMeta | null> {
 interface Periodo {
   desde: string;
   hasta: string;
-  rol: RolFiltro;
 }
 
 export async function fetchPulso(periodo: Periodo): Promise<PulsoData | null> {
   const auth = await authHeader();
   if (!auth) return null;
-  const qs = new URLSearchParams({ desde: periodo.desde, hasta: periodo.hasta, rol: periodo.rol }).toString();
+  const qs = new URLSearchParams({ desde: periodo.desde, hasta: periodo.hasta }).toString();
   const res = await fetch(fastapiUrl(`/api/report/pulso?${qs}`), { headers: auth, cache: "no-store" });
   if (!res.ok) return null;
   return (await res.json()) as PulsoData;
@@ -43,7 +41,7 @@ export async function fetchPulso(periodo: Periodo): Promise<PulsoData | null> {
 export async function fetchTemasEstado(periodo: Periodo): Promise<TemasEstado | null> {
   const auth = await authHeader();
   if (!auth) return null;
-  const qs = new URLSearchParams({ desde: periodo.desde, hasta: periodo.hasta, rol: periodo.rol }).toString();
+  const qs = new URLSearchParams({ desde: periodo.desde, hasta: periodo.hasta }).toString();
   const res = await fetch(fastapiUrl(`/api/report/temas?${qs}`), { headers: auth, cache: "no-store" });
   if (!res.ok) return null;
   return (await res.json()) as TemasEstado;
@@ -52,7 +50,7 @@ export async function fetchTemasEstado(periodo: Periodo): Promise<TemasEstado | 
 export async function fetchEstudiantes(periodo: Periodo): Promise<EstudiantesData | null> {
   const auth = await authHeader();
   if (!auth) return null;
-  const qs = new URLSearchParams({ desde: periodo.desde, hasta: periodo.hasta, rol: periodo.rol }).toString();
+  const qs = new URLSearchParams({ desde: periodo.desde, hasta: periodo.hasta }).toString();
   const res = await fetch(fastapiUrl(`/api/report/estudiantes?${qs}`), { headers: auth, cache: "no-store" });
   if (!res.ok) return null;
   return (await res.json()) as EstudiantesData;
@@ -61,7 +59,7 @@ export async function fetchEstudiantes(periodo: Periodo): Promise<EstudiantesDat
 export async function fetchEstudianteDetalle(usuario: string, periodo: Periodo): Promise<EstudianteDetalle | null> {
   const auth = await authHeader();
   if (!auth) return null;
-  const qs = new URLSearchParams({ desde: periodo.desde, hasta: periodo.hasta, rol: periodo.rol }).toString();
+  const qs = new URLSearchParams({ desde: periodo.desde, hasta: periodo.hasta }).toString();
   const res = await fetch(fastapiUrl(`/api/report/estudiantes/${encodeURIComponent(usuario)}?${qs}`), {
     headers: auth,
     cache: "no-store",

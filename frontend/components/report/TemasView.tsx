@@ -18,10 +18,9 @@ interface TemasViewProps {
   initialEstado: TemasEstado;
   desde: string;
   hasta: string;
-  rol: string;
 }
 
-export function TemasView({ initialEstado, desde, hasta, rol }: TemasViewProps) {
+export function TemasView({ initialEstado, desde, hasta }: TemasViewProps) {
   const router = useRouter();
   const searchParams = useSearchParams();
   const focoTema = searchParams.get("tema");
@@ -49,7 +48,7 @@ export function TemasView({ initialEstado, desde, hasta, rol }: TemasViewProps) 
     }, 4000);
 
     try {
-      const qs = new URLSearchParams({ desde, hasta, rol }).toString();
+      const qs = new URLSearchParams({ desde, hasta }).toString();
       const res = await fetch(`/api/report/temas/generate?${qs}`, { method: "POST" });
       const data = await res.json();
 

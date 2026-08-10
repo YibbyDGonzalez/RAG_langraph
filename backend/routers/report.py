@@ -16,16 +16,14 @@ async def meta():
 async def pulso(
     desde: str = Query(...),
     hasta: str = Query(...),
-    rol: str = Query("todos"),
 ):
-    return report_service.pulso(desde, hasta, rol)
+    return report_service.pulso(desde, hasta)
 
 
 @router.post("/temas/generate")
 async def generar_temas(
     desde: str = Query(...),
     hasta: str = Query(...),
-    rol: str = Query("todos"),
 ):
     groq_key = report_service.groq_disponible()
     if not groq_key:
@@ -34,32 +32,30 @@ async def generar_temas(
             detail="GROQ_API_KEY no configurada; el análisis de temas no está disponible.",
         )
     try:
-        report_service.generar_temas(desde, hasta, rol, groq_key)
+        report_service.generar_temas(desde, hasta, groq_key)
     except report_service.DatosInsuficientes as e:
         raise HTTPException(
             status_code=422,
             detail=f"Se necesitan al menos 5 preguntas para el análisis (período actual: {e.n}).",
         )
     # Mismo shape que GET /temas (incluye evolucion_semanal), ya con los temas actualizados.
-    return report_service.estado_temas(desde, hasta, rol)
+    return report_service.estado_temas(desde, hasta)
 
 
 @router.get("/temas")
 async def estado_temas(
     desde: str = Query(...),
     hasta: str = Query(...),
-    rol: str = Query("todos"),
 ):
-    return report_service.estado_temas(desde, hasta, rol)
+    return report_service.estado_temas(desde, hasta)
 
 
 @router.get("/estudiantes")
 async def estudiantes(
     desde: str = Query(...),
     hasta: str = Query(...),
-    rol: str = Query("todos"),
 ):
-    return report_service.estudiantes(desde, hasta, rol)
+    return report_service.estudiantes(desde, hasta)
 
 
 @router.get("/estudiantes/{usuario}")
@@ -67,6 +63,5 @@ async def estudiante_detalle(
     usuario: str,
     desde: str = Query(...),
     hasta: str = Query(...),
-    rol: str = Query("todos"),
 ):
-    return report_service.estudiante_detalle(usuario, desde, hasta, rol)
+    return report_service.estudiante_detalle(usuario, desde, hasta)

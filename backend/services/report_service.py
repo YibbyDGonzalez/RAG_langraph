@@ -31,6 +31,10 @@ from report_generator.modules.topic_analysis import evolucion_semanal_por_tema, 
 
 DB_PATH = os.getenv("LOGS_DB_PATH", "data/logs/mbe_logs.db")
 
+# El reporte docente analiza únicamente lo que preguntan los estudiantes;
+# "docentes"/"todos" eran opciones ilustrativas del filtro que ya no se exponen.
+ROL_REPORTE = "estudiantes"
+
 
 class DatosInsuficientes(Exception):
     def __init__(self, n: int):
@@ -58,18 +62,18 @@ def rango_fechas() -> dict:
     }
 
 
-def _cargar(desde: str, hasta: str, rol: str):
+def _cargar(desde: str, hasta: str):
     df_actual, df_anterior = load_data_con_periodo_anterior(DB_PATH, desde, hasta)
     df_historico = load_data_historico(DB_PATH)
     return (
-        filtrar_por_rol(df_actual, rol),
-        filtrar_por_rol(df_anterior, rol),
-        filtrar_por_rol(df_historico, rol),
+        filtrar_por_rol(df_actual, ROL_REPORTE),
+        filtrar_por_rol(df_anterior, ROL_REPORTE),
+        filtrar_por_rol(df_historico, ROL_REPORTE),
     )
 
 
-def pulso(desde: str, hasta: str, rol: str) -> dict:
-    df_actual, df_anterior, df_historico = _cargar(desde, hasta, rol)
+def pulso(desde: str, hasta: str) -> dict:
+    df_actual, df_anterior, df_historico = _cargar(desde, hasta)
     roster = cargar_roster()
 
     kpis_delta = kpis_con_delta(df_actual, df_anterior)
@@ -79,8 +83,8 @@ def pulso(desde: str, hasta: str, rol: str) -> dict:
 
     sparkline_data = sparkline_semanal(df_historico, hasta, semanas=4)
 
-    scope = topic_store.estado_scope(rol, DB_PATH)
-    mapeo_temas = topic_store.mapeo_pregunta_tema(rol, DB_PATH) if scope["existe"] else {}
+    scope = topic_store.estado_scope(ROL_REPORTE, DB_PATH)
+    mapeo_temas = topic_store.mapeo_pregunta_tema(ROL_REPORTE, DB_PATH) if scope["existe"] else {}
 
     tema_en_alza = None
     temas_debiles = []
@@ -109,22 +113,22 @@ def pulso(desde: str, hasta: str, rol: str) -> dict:
     }
 
 
-def generar_temas(desde: str, hasta: str, rol: str, groq_api_key: str) -> dict:
-    if not topic_store.estado_scope(rol, DB_PATH)["existe"]:
-        n = topic_store.contar_pendientes(rol, DB_PATH)
+def generar_temas(desde: str, hasta: str, groq_api_key: str) -> dict:
+    if not topic_store.estado_scope(ROL_REPORTE, DB_PATH)["existe"]:
+        n = topic_store.contar_pendientes(ROL_REPORTE, DB_PATH)
         if n < TEMAS_MIN_PREGUNTAS_NUEVAS:
             raise DatosInsuficientes(n)
-    topic_store.actualizar_scope(rol, groq_api_key, DB_PATH)
-    return estado_temas(desde, hasta, rol)
+    topic_store.actualizar_scope(ROL_REPORTE, groq_api_key, DB_PATH)
+    return estado_temas(desde, hasta)
 
 
-def estado_temas(desde: str, hasta: str, rol: str) -> dict:
-    scope = topic_store.estado_scope(rol, DB_PATH)
+def estado_temas(desde: str, hasta: str) -> dict:
+    scope = topic_store.estado_scope(ROL_REPORTE, DB_PATH)
     if not scope["existe"]:
         return {"status": "idle"}
 
-    mapeo = topic_store.mapeo_pregunta_tema(rol, DB_PATH)
-    df_actual, _, _ = _cargar(desde, hasta, rol)
+    mapeo = topic_store.mapeo_pregunta_tema(ROL_REPORTE, DB_PATH)
+    df_actual, _, _ = _cargar(desde, hasta)
     temas = resumen_temas(df_actual, mapeo)
     evolucion = evolucion_semanal_por_tema(df_actual, mapeo)
     evolucion_json = [
@@ -140,10 +144,10 @@ def estado_temas(desde: str, hasta: str, rol: str) -> dict:
     }
 
 
-def estudiantes(desde: str, hasta: str, rol: str) -> dict:
-    df_actual, _, df_historico = _cargar(desde, hasta, rol)
+def estudiantes(desde: str, hasta: str) -> dict:
+    df_actual, _, df_historico = _cargar(desde, hasta)
     roster = cargar_roster()
-    mapeo_temas = topic_store.mapeo_pregunta_tema(rol, DB_PATH)
+    mapeo_temas = topic_store.mapeo_pregunta_tema(ROL_REPORTE, DB_PATH)
 
     tabla = tabla_estudiantes(df_actual, mapeo_temas, roster)
 
@@ -155,8 +159,8 @@ def estudiantes(desde: str, hasta: str, rol: str) -> dict:
     }
 
 
-def estudiante_detalle(usuario: str, desde: str, hasta: str, rol: str) -> dict:
-    mapeo_temas = topic_store.mapeo_pregunta_tema(rol, DB_PATH)
+def estudiante_detalle(usuario: str, desde: str, hasta: str) -> dict:
+    mapeo_temas = topic_store.mapeo_pregunta_tema(ROL_REPORTE, DB_PATH)
 
     usuario_norm = usuario.lower()
     roster = cargar_roster()

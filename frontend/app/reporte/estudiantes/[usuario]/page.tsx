@@ -6,11 +6,10 @@ import { StudentQuestions } from "@/components/report/StudentQuestions";
 import { StudentSparkline } from "@/components/report/StudentSparkline";
 import { StudentTopicProfile } from "@/components/report/StudentTopicProfile";
 import { fetchEstudianteDetalle, fetchReportMeta } from "@/lib/report-api";
-import type { RolFiltro } from "@/lib/report-types";
 
 interface EstudianteDetallePageProps {
   params: Promise<{ usuario: string }>;
-  searchParams: Promise<{ desde?: string; hasta?: string; rol?: string }>;
+  searchParams: Promise<{ desde?: string; hasta?: string }>;
 }
 
 export default async function EstudianteDetallePage({ params, searchParams }: EstudianteDetallePageProps) {
@@ -24,14 +23,13 @@ export default async function EstudianteDetallePage({ params, searchParams }: Es
 
   const desde = sp.desde ?? meta?.min_date ?? "";
   const hasta = sp.hasta ?? meta?.max_date ?? "";
-  const rol = (sp.rol as RolFiltro) ?? "todos";
-  const backQs = new URLSearchParams({ desde, hasta, rol }).toString();
+  const backQs = new URLSearchParams({ desde, hasta }).toString();
 
   if (!desde || !hasta) {
     return <div className="text-sm text-ink-soft">No hay datos disponibles todavía.</div>;
   }
 
-  const detalle = await fetchEstudianteDetalle(usuario, { desde, hasta, rol });
+  const detalle = await fetchEstudianteDetalle(usuario, { desde, hasta });
   if (!detalle) {
     return <div className="text-sm text-danger">No se pudo cargar el detalle del estudiante.</div>;
   }
