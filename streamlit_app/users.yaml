@@ -55,6 +55,11 @@ credentials:
       name: Juan Sebastian Ruiz
       rol: Estudiante
       password: $2b$12$hQgR57eKEx0gOQvBbFCaZ.IVYNmW.HDeIs8E0XcRhYewn7k020XVK
+    gonzalez_yibby@javeriana.edu.co:
+      email: gonzalez_yibby@javeriana.edu.co
+      name: Yibby Daniela Gonzalez
+      rol: Estudiante
+      password: $2b$12$cspwWb1IdUh/n/yovZ8Y/eteQGlGxrlNTzRawYLVpOMMEr82bBI1i
 preauthorized:
   emails:
     - ''
