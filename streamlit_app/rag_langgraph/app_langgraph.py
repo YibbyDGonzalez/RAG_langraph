@@ -175,8 +175,9 @@ def responder_stream_logged(
         f"PREGUNTA:\n{query}\n\n"
         f"CONTEXTO:\n{contexto}\n\n"
         f"Responde claro y, al citar, usa exactamente el texto entre paréntesis de cada "
-        f"FUENTE que uses (autor, título, año y página), y no inventes. Si la pregunta hace "
-        f"referencia al historial reciente de la conversación, respóndela usando ese contexto."
+        f"FUENTE que uses (autor, título, año y página), y no inventes. Usa el historial de la "
+        f"conversación solo si la pregunta es un seguimiento que lo necesita. Ve directo a la "
+        f"respuesta: no expliques ni menciones si la pregunta se relaciona o no con el historial."
     )
     print(f"✍️  [{trace_id}] Prompt listo ({len(prompt)} caracteres) — iniciando generación...")
 
