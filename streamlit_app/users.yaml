@@ -50,6 +50,11 @@ credentials:
       name: Lucas Restrepo
       rol: Estudiante
       password: $2b$12$u4GT2CAvVaQdgWFlrn55/OuX1hcDlCfW8Ra63vWdvw3eXq9szrobm
+    juan.ruizc@javeriana.edu.co:
+      email: juan.ruizc@javeriana.edu.co
+      name: Juan Sebastian Ruiz
+      rol: Estudiante
+      password: $2b$12$hQgR57eKEx0gOQvBbFCaZ.IVYNmW.HDeIs8E0XcRhYewn7k020XVK
 preauthorized:
   emails:
     - ''
