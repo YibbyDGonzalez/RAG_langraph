@@ -16,6 +16,14 @@ UMAP_N_COMPONENTS = 10
 HDBSCAN_MIN_CLUSTER_SIZE = 3
 HDBSCAN_MIN_SAMPLES = 2
 
+# Tope de temas que puede devolver un clustering (HDBSCAN o su fallback
+# KMeans). Si HDBSCAN encuentra más de este número de grupos válidos, se
+# fusionan iterativamente los dos centroides más cercanos hasta llegar a
+# este tope; el fallback de KMeans usa este mismo número como límite
+# superior de k. 10 es un punto medio: ni tan pocos que mezcle subtemas
+# distintos entre sí, ni tantos que sea difícil de escanear para el docente.
+MAX_TEMAS = 10
+
 # Número máximo de preguntas de ejemplo mostradas por tema en la tabla
 MAX_EJEMPLOS_POR_TEMA = 3
 

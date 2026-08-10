@@ -53,6 +53,37 @@ def generar_embeddings(preguntas_unicas: list) -> np.ndarray:
     return modelo.encode(preguntas_unicas, show_progress_bar=True, batch_size=32)
 
 
+def _consolidar_clusters(reduced: np.ndarray, labels: np.ndarray, max_clusters: int) -> np.ndarray:
+    """
+    Si el clustering produjo más de max_clusters grupos válidos, fusiona
+    iterativamente los dos más cercanos (distancia euclidiana entre
+    centroides en el espacio reducido de UMAP, el mismo donde se clusterizó)
+    hasta llegar al tope. El ruido de HDBSCAN (label -1) no se toca: sigue
+    siendo el bucket "Preguntas variadas" que se maneja aparte.
+    """
+    labels_validos = sorted(set(labels) - {-1})
+    if len(labels_validos) <= max_clusters:
+        return labels
+
+    labels = labels.copy()
+    centroides = {l: reduced[labels == l].mean(axis=0) for l in labels_validos}
+    while len(centroides) > max_clusters:
+        ids = list(centroides.keys())
+        mejor_par, mejor_dist = None, None
+        for i in range(len(ids)):
+            for j in range(i + 1, len(ids)):
+                dist = np.linalg.norm(centroides[ids[i]] - centroides[ids[j]])
+                if mejor_dist is None or dist < mejor_dist:
+                    mejor_dist, mejor_par = dist, (ids[i], ids[j])
+        a, b = mejor_par
+        idx_a, idx_b = labels == a, labels == b
+        n_a, n_b = int(idx_a.sum()), int(idx_b.sum())
+        centroides[a] = (centroides[a] * n_a + centroides[b] * n_b) / (n_a + n_b)
+        labels[idx_b] = a
+        del centroides[b]
+    return labels
+
+
 def _clusterizar_embeddings(embeddings: np.ndarray) -> np.ndarray:
     """
     UMAP → HDBSCAN (KMeans como fallback) sobre embeddings ya calculados.
@@ -81,11 +112,12 @@ def _clusterizar_embeddings(embeddings: np.ndarray) -> np.ndarray:
 
     n_clusters_validos = len(set(labels) - {-1})
     if n_clusters_validos < 2:
-        k = max(2, min(8, int(math.sqrt(n / 2))))
+        k = max(2, min(config.MAX_TEMAS, int(math.sqrt(n / 2))))
         print(f"    HDBSCAN sin grupos suficientes → usando KMeans (k={k})...")
         kmeans = KMeans(n_clusters=k, random_state=42, n_init=10)
         labels = kmeans.fit_predict(reduced)
 
+    labels = _consolidar_clusters(reduced, labels, config.MAX_TEMAS)
     return labels
 
 
