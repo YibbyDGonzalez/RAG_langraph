@@ -84,8 +84,8 @@ export function ReportSidebar({ teacherName, minDate, maxDate }: ReportSidebarPr
         </div>
         <div className="text-[11px] text-ink-muted leading-relaxed border-t border-border pt-3">
           <div className="font-semibold uppercase tracking-[0.04em] text-[10px] mb-1">Equipo</div>
-          <div>Estudiantes: Yibby Gonzalez y Sebastian Ruiz</div>
-          <div>Docente: Juan Pajaro</div>
+          <div>Estudiantes: Yibby Gonzalez (gonzalez_yibby@javeriana.edu.co) y Sebastian Ruiz (juan.ruizc@javeriana.edu.co)</div>
+          <div>Docentes: Juan Pajaro (juanpajaro@javeriana.edu.co) y Fabian Gil (fgil@javeriana.edu.co)</div>
         </div>
       </div>
     </aside>
