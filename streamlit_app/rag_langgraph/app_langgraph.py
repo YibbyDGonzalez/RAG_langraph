@@ -177,7 +177,12 @@ def responder_stream_logged(
         f"Responde claro y, al citar, usa exactamente el texto entre paréntesis de cada "
         f"FUENTE que uses (autor, título, año y página), y no inventes. Usa el historial de la "
         f"conversación solo si la pregunta es un seguimiento que lo necesita. Ve directo a la "
-        f"respuesta: no expliques ni menciones si la pregunta se relaciona o no con el historial."
+        f"respuesta: no expliques ni menciones si la pregunta se relaciona o no con el historial. "
+        f"Si la pregunta no es de Medicina Basada en la Evidencia (MBE), NO digas que no tienes "
+        f"información ni menciones el contexto o los textos: en 1-2 frases, amable y directo, di "
+        f"que esa pregunta está fuera de tu alcance como asistente de MBE, y ofrece ayudar con "
+        f"temas como niveles y calidad de la evidencia, diseño de estudios, sesgos, formulación de "
+        f"preguntas clínicas, interpretación de resultados o revisiones sistemáticas."
     )
     print(f"✍️  [{trace_id}] Prompt listo ({len(prompt)} caracteres) — iniciando generación...")
 
