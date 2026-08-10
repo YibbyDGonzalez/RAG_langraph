@@ -3,6 +3,8 @@
 import Image from "next/image";
 import { usePathname, useRouter, useSearchParams } from "next/navigation";
 
+import { TeamCredits } from "@/components/TeamCredits";
+
 interface ReportSidebarProps {
   teacherName: string;
   minDate: string | null;
@@ -82,11 +84,7 @@ export function ReportSidebar({ teacherName, minDate, maxDate }: ReportSidebarPr
         <div className="text-[11px] text-ink-muted leading-relaxed">
           Vistas agregadas (Niveles 1–3). No incluyen identificación individual salvo tutoría explícita.
         </div>
-        <div className="text-[11px] text-ink-muted leading-relaxed border-t border-border pt-3">
-          <div className="font-semibold uppercase tracking-[0.04em] text-[10px] mb-1">Equipo</div>
-          <div>Estudiantes: Yibby Gonzalez (gonzalez_yibby@javeriana.edu.co) y Sebastian Ruiz (juan.ruizc@javeriana.edu.co)</div>
-          <div>Docentes: Juan Pajaro (juanpajaro@javeriana.edu.co) y Fabian Gil (fgil@javeriana.edu.co)</div>
-        </div>
+        <TeamCredits />
       </div>
     </aside>
   );
