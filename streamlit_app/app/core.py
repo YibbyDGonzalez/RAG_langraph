@@ -14,23 +14,13 @@ EMBEDDINGS_PATH = "data/processed/models/embeddings_total.npy"
 FAISS_PATH = "data/processed/models/faiss_index_total.bin"
 
 EMBED_MODEL_NAME = "sentence-transformers/paraphrase-multilingual-MiniLM-L12-v2"
-GROQ_MODEL = "llama-3.1-8b-instant"
+GROQ_MODEL = "openai/gpt-oss-20b"
 
-_SYSTEM_PROMPT = (
-    "Eres un experto en Medicina Basada en la Evidencia (MBE). "
-    "Tu tarea es responder preguntas clinicas de manera clara, precisa y concisa, "
-    "utilizando UNICAMENTE la informacion proporcionada en los textos de contexto. "
-    "Reglas estrictas: "
-    "- No uses conocimiento externo. "
-    "- No inventes informacion. "
-    "- Si la respuesta no esta en el contexto, responde: "
-    "'No hay suficiente informacion en los textos proporcionados para responder la pregunta.' "
-    "- Prioriza informacion relevante y directamente relacionada con la pregunta. "
-    "- Resume y sintetiza, no copies textualmente a menos que sea necesario. "
-    "Formato de respuesta: "
-    "- Respuesta clara y directa. "
-    "- Si aplica, incluye un breve soporte citando el fragmento del texto."
-)
+# gpt-oss: Groq recomienda NO usar mensaje "system" con estos modelos (lo tratan
+# como "developer", de menor prioridad que un "system" oculto que el propio modelo
+# inyecta) y meter todas las instrucciones en el mensaje "user". Por eso ya no hay
+# un _SYSTEM_PROMPT separado: las reglas viven todas en el prompt que arma
+# app_langgraph.py y se envian como un unico mensaje "user".
 
 
 def load_resources():
@@ -57,15 +47,20 @@ def buscar_articulos(query, top_k=3, *, encoder, index, df):
 
 
 def call_ollama(prompt: str, *, ollama_client) -> str:
-    """Llamada sincronica via Groq — interfaz compatible con rama main."""
+    """Llamada sincronica via Groq — interfaz compatible con rama main.
+
+    reasoning_effort="low": esto es QA extractivo sobre 3 chunks, no requiere
+    razonamiento multi-paso, y con gpt-oss los tokens de razonamiento salen del
+    mismo presupuesto que max_tokens — en "medium" (default) se comian el budget
+    y la respuesta final quedaba truncada o el modelo devolvia el fallback corto
+    en vez de la respuesta completa."""
     completion = ollama_client.chat.completions.create(
         model=GROQ_MODEL,
-        messages=[
-            {"role": "system", "content": _SYSTEM_PROMPT},
-            {"role": "user", "content": prompt},
-        ],
+        messages=[{"role": "user", "content": prompt}],
         temperature=0.2,
-        max_tokens=1300,
+        max_tokens=2048,
+        reasoning_effort="low",
+        include_reasoning=False,
     )
     return completion.choices[0].message.content
 
@@ -74,12 +69,11 @@ def call_ollama_stream(prompt: str, *, ollama_client) -> Generator[str, None, No
     """Streaming via Groq — interfaz compatible con rama main."""
     stream = ollama_client.chat.completions.create(
         model=GROQ_MODEL,
-        messages=[
-            {"role": "system", "content": _SYSTEM_PROMPT},
-            {"role": "user", "content": prompt},
-        ],
+        messages=[{"role": "user", "content": prompt}],
         temperature=0.2,
-        max_tokens=1300,
+        max_tokens=2048,
+        reasoning_effort="low",
+        include_reasoning=False,
         stream=True,
     )
     for chunk in stream:

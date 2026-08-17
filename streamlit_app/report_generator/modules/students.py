@@ -30,7 +30,7 @@ def tabla_estudiantes(df: pd.DataFrame, tema_por_pregunta: dict, roster: dict) -
             grupo_ordenado = grupo.sort_values("timestamp", ascending=False)
             ultimos_temas = []
             for tema in grupo_ordenado["tema"]:
-                if tema and tema not in ultimos_temas:
+                if isinstance(tema, str) and tema not in ultimos_temas:
                     ultimos_temas.append(tema)
                 if len(ultimos_temas) >= 3:
                     break

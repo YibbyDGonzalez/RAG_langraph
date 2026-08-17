@@ -25,6 +25,16 @@ BIBLIOGRAFIA = {
         "Guyatt G et al. Users' Guides to the Medical Literature, 2015",
 }
 
+# El PDF de "Painless Evidence-Based Medicine.pdf" tal como esta en data/raw/
+# trae, por un error operativo al generarlo, una copia completa del libro de
+# Guyatt ("Users Guides...") pegada a partir de la pagina 168 (el libro real
+# de Dans termina en su indice, paginas 166-167). Sin este limite, esas
+# paginas se indexaban dos veces bajo la referencia bibliografica equivocada
+# (citadas como "Dans... Painless EBM" cuando en realidad son de Guyatt).
+PAGINA_LIMITE = {
+    "Painless Evidence-Based Medicine.pdf": 167,
+}
+
 
 # ========================================
 # 1. EXTRAER TEXTO DE PDF
@@ -103,6 +113,10 @@ def main():
     for pdf_path in sorted(DATA_RAW.glob("*.pdf")):
         print(f"Procesando: {pdf_path.name}")
         paginas_raw = extract_pages(pdf_path)
+        limite = PAGINA_LIMITE.get(pdf_path.name)
+        if limite is not None:
+            print(f"   ↳ limitado a las primeras {limite} paginas ({len(paginas_raw)} totales en el PDF)")
+            paginas_raw = paginas_raw[:limite]
 
         chunks_doc = []
         for num_pagina, texto_pagina in enumerate(paginas_raw, start=1):

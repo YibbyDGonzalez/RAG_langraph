@@ -55,8 +55,9 @@ export function Sidebar({
             return (
               <button
                 key={c.id}
+                title={c.title}
                 onClick={() => onSelectConversation(c.id)}
-                className={`text-left px-3 py-2.5 rounded-[9px] text-[13px] whitespace-nowrap overflow-hidden text-ellipsis cursor-pointer border-0 border-l-[3px] text-ink ${
+                className={`text-left px-3 py-2.5 rounded-[9px] text-[13px] leading-snug line-clamp-2 shrink-0 cursor-pointer border-0 border-l-[3px] text-ink ${
                   active
                     ? "border-l-teal bg-surface-selected"
                     : "border-l-transparent bg-transparent"

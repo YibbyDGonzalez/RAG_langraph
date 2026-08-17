@@ -60,6 +60,276 @@ credentials:
       name: Yibby Daniela Gonzalez
       rol: Estudiante
       password: $2b$12$cspwWb1IdUh/n/yovZ8Y/eteQGlGxrlNTzRawYLVpOMMEr82bBI1i
+    1@javeriana.edu.co:
+      email: 1@javeriana.edu.co
+      name: Estudiante 1
+      rol: Estudiante
+      password: $2b$12$yRGF3twdZ7D6O1Aji4o98O..nMsWwaprHCcz/yvuGQwoTuReiFmkO
+    2@javeriana.edu.co:
+      email: 2@javeriana.edu.co
+      name: Estudiante 2
+      rol: Estudiante
+      password: $2b$12$qOv0P60CLiJ1Q06e.RNcN.9NQ3NXm1XJYSYWqVk.hP5psu9xNRA8G
+    3@javeriana.edu.co:
+      email: 3@javeriana.edu.co
+      name: Estudiante 3
+      rol: Estudiante
+      password: $2b$12$14dHRDRJBxlV5t/TtQnJ7O4YQQgVZyNg/ujbVCqjEx7vC49H1ztnm
+    4@javeriana.edu.co:
+      email: 4@javeriana.edu.co
+      name: Estudiante 4
+      rol: Estudiante
+      password: $2b$12$czNY9.IR9EKCHVtTo6wkq.op8PWDJwqbN4Vdz283Be4ybnY61sfli
+    5@javeriana.edu.co:
+      email: 5@javeriana.edu.co
+      name: Estudiante 5
+      rol: Estudiante
+      password: $2b$12$9jnirLPTeNCLwGAuR9gJW.thjuMk/eY.H3kAt4v8rnWeHSwhfeym.
+    6@javeriana.edu.co:
+      email: 6@javeriana.edu.co
+      name: Estudiante 6
+      rol: Estudiante
+      password: $2b$12$gj9q8rcS3SUQUoVopT.dx.T89nUR5fBWezuLZ55cRfKE6YcPHGGH2
+    7@javeriana.edu.co:
+      email: 7@javeriana.edu.co
+      name: Estudiante 7
+      rol: Estudiante
+      password: $2b$12$cOU.wm5aHK.YeHi9HAe4WumLtovYnrOuJtLOimm7hYLS/2yxYQu82
+    8@javeriana.edu.co:
+      email: 8@javeriana.edu.co
+      name: Estudiante 8
+      rol: Estudiante
+      password: $2b$12$HPNX.j2ZskADDjMGw.57dOuiWvB9C8Od6AZOM1yiIygKhaMNj2rEe
+    9@javeriana.edu.co:
+      email: 9@javeriana.edu.co
+      name: Estudiante 9
+      rol: Estudiante
+      password: $2b$12$cGYJEyyQtu/zTcfYR2m7Tuv3/sCxKRDNEBgo26BpQZxLzTVzowlfi
+    10@javeriana.edu.co:
+      email: 10@javeriana.edu.co
+      name: Estudiante 10
+      rol: Estudiante
+      password: $2b$12$.1Nqe8K7rdbXB1vpu7DDmuqIDSuX8u4f8vPESkfPpIczUqKbrsEjW
+    11@javeriana.edu.co:
+      email: 11@javeriana.edu.co
+      name: Estudiante 11
+      rol: Estudiante
+      password: $2b$12$VE5C7CUiakPTQvLbaU3ovu21mFdNs7Pn8p4kJRBbZqHUY2T8x1CXC
+    12@javeriana.edu.co:
+      email: 12@javeriana.edu.co
+      name: Estudiante 12
+      rol: Estudiante
+      password: $2b$12$vNyFlUMk.ybYAXh5g830OeAUtKecswP0cz9JT.Ko7rxc9buvvVD7u
+    13@javeriana.edu.co:
+      email: 13@javeriana.edu.co
+      name: Estudiante 13
+      rol: Estudiante
+      password: $2b$12$UQkx5es0DCQcyU8JdyvIcekQv5KX178D/dA5ShLvc2LQCXb/TRfRi
+    14@javeriana.edu.co:
+      email: 14@javeriana.edu.co
+      name: Estudiante 14
+      rol: Estudiante
+      password: $2b$12$IzqPO2gmHY7dAgTvSp2WLetOk2SyuxmN0krMRPOdjQyrOFaGcFSAa
+    15@javeriana.edu.co:
+      email: 15@javeriana.edu.co
+      name: Estudiante 15
+      rol: Estudiante
+      password: $2b$12$KoSlzZd2japgQGWfOR0lQejtJvlRng3JKFxDT9Vk6pDbXlBeoB34G
+    16@javeriana.edu.co:
+      email: 16@javeriana.edu.co
+      name: Estudiante 16
+      rol: Estudiante
+      password: $2b$12$mddSB5TT/L7g51lv/1EiEOEpdgqeXt3Vevx/YT5BNU3gNOz2N//Ky
+    17@javeriana.edu.co:
+      email: 17@javeriana.edu.co
+      name: Estudiante 17
+      rol: Estudiante
+      password: $2b$12$GXRL5fdbagcy6nts.HAHKehFgP9JhTgRLf/Rq7XPSxjw/mZ4Z5fZ6
+    18@javeriana.edu.co:
+      email: 18@javeriana.edu.co
+      name: Estudiante 18
+      rol: Estudiante
+      password: $2b$12$svKSmhJUySaBIz/OErtdS.S8Xqmc/NuDCn6E6gWG7aR8cudyzdmUe
+    19@javeriana.edu.co:
+      email: 19@javeriana.edu.co
+      name: Estudiante 19
+      rol: Estudiante
+      password: $2b$12$5ZCKGNjjjNm3RU6c24173OL1ckKYIQoi2EaWmrPmlcSkurjHdsIHK
+    20@javeriana.edu.co:
+      email: 20@javeriana.edu.co
+      name: Estudiante 20
+      rol: Estudiante
+      password: $2b$12$P1GVGXzus2FcYA2ZM60sDOnkBTVvcimrTP3npvACXE/ZYW1EVlPoi
+    21@javeriana.edu.co:
+      email: 21@javeriana.edu.co
+      name: Estudiante 21
+      rol: Estudiante
+      password: $2b$12$plF8SlJn0LlnogLgjlNnGe5pnnMeFecE7aMeKb2EiYELPeuuh7TvG
+    22@javeriana.edu.co:
+      email: 22@javeriana.edu.co
+      name: Estudiante 22
+      rol: Estudiante
+      password: $2b$12$/DxO.M6JlAubGdhgo/5YXetmJxCNaazkl1JtITGJYic5RvARCOmPm
+    23@javeriana.edu.co:
+      email: 23@javeriana.edu.co
+      name: Estudiante 23
+      rol: Estudiante
+      password: $2b$12$50eKyjZ.LFWYozEWtESMdexD5rAqWMUmlNDY11BdpdCzGvVkJJPku
+    24@javeriana.edu.co:
+      email: 24@javeriana.edu.co
+      name: Estudiante 24
+      rol: Estudiante
+      password: $2b$12$.2V3mNUFnXO/K8psTImiv.kH85dyMMQ/aQg557bYnWa5tZfYIvvSW
+    25@javeriana.edu.co:
+      email: 25@javeriana.edu.co
+      name: Estudiante 25
+      rol: Estudiante
+      password: $2b$12$LKVY.t8oE6AHcENQKDpHXO5L0M2bFaJejyQdCuxmKMkSrJrQ72Zzi
+    26@javeriana.edu.co:
+      email: 26@javeriana.edu.co
+      name: Estudiante 26
+      rol: Estudiante
+      password: $2b$12$lHJ9jvKrEJjr9unMH9Qqbudtvm/yVAsslDJA7VKDTNG9y0ljUqpJK
+    27@javeriana.edu.co:
+      email: 27@javeriana.edu.co
+      name: Estudiante 27
+      rol: Estudiante
+      password: $2b$12$vL49u29j5VK9MWdRr.cq7u0mnxI6Yt3uvdKrUuJ9b9pqdxBR9RbOq
+    28@javeriana.edu.co:
+      email: 28@javeriana.edu.co
+      name: Estudiante 28
+      rol: Estudiante
+      password: $2b$12$Uxh0QvEDgehthpFhR1N0o.ozSeTE.VkJYnDhkyNe0uixrtEIxKZqq
+    29@javeriana.edu.co:
+      email: 29@javeriana.edu.co
+      name: Estudiante 29
+      rol: Estudiante
+      password: $2b$12$OvO2ugfSsXz8EOaWEp4Gc.xpxomFswq3/b14URuYFDhnupUz583ji
+    30@javeriana.edu.co:
+      email: 30@javeriana.edu.co
+      name: Estudiante 30
+      rol: Estudiante
+      password: $2b$12$dB.3ZqIp4GnUzvx5F8SwwOLNK.p9iuz4Oe6MaQ.YgZJT/omTxFs8y
+    31@javeriana.edu.co:
+      email: 31@javeriana.edu.co
+      name: Estudiante 31
+      rol: Estudiante
+      password: $2b$12$7VON77FNKIIjtqpfrm/2A.cEpZqKifjMDSuk7CRJUI2YcNAmV.ov2
+    32@javeriana.edu.co:
+      email: 32@javeriana.edu.co
+      name: Estudiante 32
+      rol: Estudiante
+      password: $2b$12$C1F5KTvxIBcoxImv/3qoyexnBJvfRq/Fo6HH4IrpajgDEzfFZ8t32
+    33@javeriana.edu.co:
+      email: 33@javeriana.edu.co
+      name: Estudiante 33
+      rol: Estudiante
+      password: $2b$12$EafJlF6gsVuIR3vGZ3lSOOc6UDMHtSBM.54SnV03Cg9e9D7SvnT1.
+    34@javeriana.edu.co:
+      email: 34@javeriana.edu.co
+      name: Estudiante 34
+      rol: Estudiante
+      password: $2b$12$b5PRQ/TE9zcwDiguXVAYi.bVtxt6EBcDA/OjQR8Ft4vgbRT9wxDp6
+    35@javeriana.edu.co:
+      email: 35@javeriana.edu.co
+      name: Estudiante 35
+      rol: Estudiante
+      password: $2b$12$ICsc42bPUxius8PoqLQqoOWxpVQJKkVHcT6b6PBnCBNVPBBKDcdNq
+    36@javeriana.edu.co:
+      email: 36@javeriana.edu.co
+      name: Estudiante 36
+      rol: Estudiante
+      password: $2b$12$UQQwpel/qmgkR.ljC2EdNekYGSZceE1FFtLgNvE/QCwR.52FkTvRm
+    37@javeriana.edu.co:
+      email: 37@javeriana.edu.co
+      name: Estudiante 37
+      rol: Estudiante
+      password: $2b$12$YXm4GYmyX/AFXbyG3LsWA.7iyCL3ZDUgsUaXEedh4dgHQpkDKwday
+    38@javeriana.edu.co:
+      email: 38@javeriana.edu.co
+      name: Estudiante 38
+      rol: Estudiante
+      password: $2b$12$ZYCkpKNZ1Tl7.Qm24LUn9..tv7jsoIFI2yM6DBdi8yMWx1lPNwcj6
+    39@javeriana.edu.co:
+      email: 39@javeriana.edu.co
+      name: Estudiante 39
+      rol: Estudiante
+      password: $2b$12$wipMixXrlGmIhHDhlOwOL.XsghIZHA8vLARRFvb/60BqM3.biHHoy
+    40@javeriana.edu.co:
+      email: 40@javeriana.edu.co
+      name: Estudiante 40
+      rol: Estudiante
+      password: $2b$12$GUbldmthhf0tlmKbxCpe/Ou8yABAtxL217hWDBrW/cn9n9CeFEGC2
+    41@javeriana.edu.co:
+      email: 41@javeriana.edu.co
+      name: Estudiante 41
+      rol: Estudiante
+      password: $2b$12$FbqqJL9RQ4HCk/ddTCKnXOscluy4AxjCc2Y4Es0RcIFE5dsYfD3sK
+    42@javeriana.edu.co:
+      email: 42@javeriana.edu.co
+      name: Estudiante 42
+      rol: Estudiante
+      password: $2b$12$RhC5DixZGw8rg10.JWFMe.C8Uv8/tOZZQuH1E8TQtsS3aeWo2pJUC
+    43@javeriana.edu.co:
+      email: 43@javeriana.edu.co
+      name: Estudiante 43
+      rol: Estudiante
+      password: $2b$12$SC0Mnz4A1mdW0HsU8Nr3pOwQxWAyOKI3Lh7lCBRySeUX8O5L/YJfC
+    44@javeriana.edu.co:
+      email: 44@javeriana.edu.co
+      name: Estudiante 44
+      rol: Estudiante
+      password: $2b$12$NPW7i6XZxFy/.yMFcofu8ukwMW8AREP5mK6QOJeV.Q.1BmxZcaP2.
+    45@javeriana.edu.co:
+      email: 45@javeriana.edu.co
+      name: Estudiante 45
+      rol: Estudiante
+      password: $2b$12$ePToqi0o99.4i0y5qfeoUO.CHnS241MlcWCi4WJsp6cAbDZle1hM2
+    46@javeriana.edu.co:
+      email: 46@javeriana.edu.co
+      name: Estudiante 46
+      rol: Estudiante
+      password: $2b$12$3uVyriREUIfAnKYl/P1yb.gExDrt5ezu7L8kVtG78smRL5lLusR5O
+    47@javeriana.edu.co:
+      email: 47@javeriana.edu.co
+      name: Estudiante 47
+      rol: Estudiante
+      password: $2b$12$5lE34ebpiOYydhBesD75HeAfx5qkRHgj2HGXSlsjK04duPQ8gDuTO
+    48@javeriana.edu.co:
+      email: 48@javeriana.edu.co
+      name: Estudiante 48
+      rol: Estudiante
+      password: $2b$12$kLWPan27KZe6ZHKzYmhafeLvhy1yo4nAUgEFoH7Vbj4MEhVkwNB2K
+    49@javeriana.edu.co:
+      email: 49@javeriana.edu.co
+      name: Estudiante 49
+      rol: Estudiante
+      password: $2b$12$WeOHZHIlAwabB3uJYdVOQu0qPKSl29P7Ivc0jgydx5hSjBErxj5Z2
+    50@javeriana.edu.co:
+      email: 50@javeriana.edu.co
+      name: Estudiante 50
+      rol: Estudiante
+      password: $2b$12$kHCh17ykpAvzJ9CuPeJ3J.6s.UznhEz1d/vtgmG7UQxUiKxZz7EGa
+    51@javeriana.edu.co:
+      email: 51@javeriana.edu.co
+      name: Estudiante 51
+      rol: Estudiante
+      password: $2b$12$.afxxn78FgDMKQqBbdE7n.xwzEqof3PnHyRxuMXKlIttRAuv1rQk2
+    52@javeriana.edu.co:
+      email: 52@javeriana.edu.co
+      name: Estudiante 52
+      rol: Estudiante
+      password: $2b$12$AtoGH6Wc846jSc3ou51LnewvmyMzgGviC8bKwRZv8Mb3iVtCFYeLG
+    53@javeriana.edu.co:
+      email: 53@javeriana.edu.co
+      name: Estudiante 53
+      rol: Estudiante
+      password: $2b$12$nu4.B4n4dGbdqnnt8QpVS.YAE.M/I0840DU2Yzj5EI1wsyOgWRouC
+    54@javeriana.edu.co:
+      email: 54@javeriana.edu.co
+      name: Estudiante 54
+      rol: Estudiante
+      password: $2b$12$aYnI14nyp3A7BmoPDUrAO.TFwg4W/GnqaRdLssT301eSz9LKv.L9y
 preauthorized:
   emails:
     - ''
