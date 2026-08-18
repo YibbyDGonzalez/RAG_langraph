@@ -1,6 +1,34 @@
+import os
+import sys
+
 import pandas as pd
 
+sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
+import config
+
 DIAS_ES = ["Lunes", "Martes", "Miércoles", "Jueves", "Viernes", "Sábado", "Domingo"]
+
+
+def _duraciones_por_sesion(
+    df: pd.DataFrame, gap_min: int = config.SESION_GAP_INACTIVIDAD_MIN
+) -> pd.Series:
+    """
+    Duración (en minutos) de cada sesión real dentro de cada session_id.
+
+    session_id identifica una conversación (se conserva mientras el
+    estudiante no inicie un chat nuevo, incluso entre logins distintos), no
+    una sesión de uso. Por eso una sesión real termina cuando pasan más de
+    `gap_min` minutos sin preguntas: la siguiente pregunta del mismo
+    session_id arranca una sesión nueva en vez de sumarse a la anterior.
+    """
+    ordenado = df.sort_values(["session_id", "timestamp"])
+    delta = ordenado.groupby("session_id")["timestamp"].diff()
+    nueva_sesion = delta.isna() | (delta > pd.Timedelta(minutes=gap_min))
+    sesion_real = nueva_sesion.groupby(ordenado["session_id"]).cumsum()
+
+    grupo = ordenado.groupby([ordenado["session_id"], sesion_real])["timestamp"]
+    duraciones = (grupo.max() - grupo.min()).dt.total_seconds() / 60
+    return duraciones[duraciones > 0]
 
 
 def compute_temporal_stats(df: pd.DataFrame) -> dict:
@@ -29,16 +57,11 @@ def compute_temporal_stats(df: pd.DataFrame) -> dict:
         for dia in range(7)
     }
 
-    # Duración promedio de sesión (tiempo entre primera y última pregunta del session_id)
-    sesion_ts = df.groupby("session_id")["timestamp"].agg(["min", "max"])
-    sesion_ts["duracion_min"] = (
-        (sesion_ts["max"] - sesion_ts["min"]).dt.total_seconds() / 60
-    )
-    sesiones_validas = sesion_ts[sesion_ts["duracion_min"] > 0]
+    # Duración promedio de sesión, partiendo cada session_id en sesiones reales
+    # por huecos de inactividad (ver _duraciones_por_sesion)
+    duraciones_validas = _duraciones_por_sesion(df)
     duracion_promedio = (
-        float(sesiones_validas["duracion_min"].mean())
-        if len(sesiones_validas) > 0
-        else 0.0
+        float(duraciones_validas.mean()) if len(duraciones_validas) > 0 else 0.0
     )
 
     # Detección de concentración: ¿los 2 días más activos acumulan ≥40% del uso?

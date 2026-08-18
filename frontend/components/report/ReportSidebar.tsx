@@ -4,6 +4,7 @@ import Image from "next/image";
 import { usePathname, useRouter, useSearchParams } from "next/navigation";
 
 import { TeamCredits } from "@/components/TeamCredits";
+import { useIdleLogout } from "@/lib/use-idle-logout";
 
 interface ReportSidebarProps {
   teacherName: string;
@@ -15,6 +16,7 @@ export function ReportSidebar({ teacherName, minDate, maxDate }: ReportSidebarPr
   const pathname = usePathname();
   const router = useRouter();
   const searchParams = useSearchParams();
+  useIdleLogout();
 
   const desde = searchParams.get("desde") ?? minDate ?? "";
   const hasta = searchParams.get("hasta") ?? maxDate ?? "";

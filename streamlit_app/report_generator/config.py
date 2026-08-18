@@ -61,6 +61,13 @@ TEMAS_SIMILITUD_UMBRAL = 0.55
 # Días de inactividad para considerar a un estudiante "silencioso" (Nivel 1 y 3)
 SILENCIO_DIAS = 14
 
+# Minutos sin preguntas dentro de una misma conversación (session_id) a partir
+# de los cuales se considera que la sesión terminó y una pregunta posterior
+# arranca una sesión nueva. Sin este corte, un estudiante que reabre una
+# conversación días después infla artificialmente "Tiempo prom. por sesión"
+# (que se calcula como última pregunta − primera pregunta del grupo).
+SESION_GAP_INACTIVIDAD_MIN = 30
+
 # Umbrales para detectar "temas con retrieval débil" (Nivel 2):
 # un tema entra en la alerta si tiene al menos RETRIEVAL_DEBIL_MIN_PREGUNTAS
 # preguntas Y su score de similitud representativo promedio es

@@ -7,6 +7,7 @@ import { ChatInput } from "@/components/ChatInput";
 import { MessageBubble } from "@/components/MessageBubble";
 import { Sidebar } from "@/components/Sidebar";
 import { WelcomeScreen } from "@/components/WelcomeScreen";
+import { useIdleLogout } from "@/lib/use-idle-logout";
 import type { ConversationSummary, Message } from "@/lib/types";
 
 interface ChatShellProps {
@@ -17,6 +18,7 @@ interface ChatShellProps {
 
 export function ChatShell({ userName, role, initialConversations }: ChatShellProps) {
   const router = useRouter();
+  useIdleLogout();
   const [conversations, setConversations] = useState(initialConversations);
   const [activeConversationId, setActiveConversationId] = useState<string | null>(null);
   const [messages, setMessages] = useState<Message[]>([]);
