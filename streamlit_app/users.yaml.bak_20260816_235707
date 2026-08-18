@@ -1,0 +1,69 @@
+credentials:
+  usernames:
+    Docentes1@javeriana.edu.co:
+      email: Docentes1@javeriana.edu.co
+      name: Docente 1
+      rol: Docente
+      password: $2b$12$7rcaMvYQMsx/6HKDwBSUSO4Wvg0pkMIk4XgTtmMzH9S889NZMyNym
+    Docentes2@javeriana.edu.co:
+      email: Docentes2@javeriana.edu.co
+      name: Docente 2
+      rol: Docente
+      password: $2b$12$LHAAfpQE5gsrKQkTVl.m/.mRgHGXowhRMmprQtQCdWwSTt/tddmyC
+    Docentes3@javeriana.edu.co:
+      email: Docentes3@javeriana.edu.co
+      name: Docente 3
+      rol: Docente
+      password: $2b$12$xH3TpklpH595RIYCfy8D/.VcwNteO6nBJa3XNtKkSpZMJQzaG5ebq
+    Docentes4@javeriana.edu.co:
+      email: Docentes4@javeriana.edu.co
+      name: Docente 4
+      rol: Docente
+      password: $2b$12$gKBW/x5tDjn1esPOTX5iCOqyaM8zN/CG7NpDNypVnR4wpFzxyOvSy
+    Docentes5@javeriana.edu.co:
+      email: Docentes5@javeriana.edu.co
+      name: Docente 5
+      rol: Docente
+      password: $2b$12$94a72bulbjgderODfD7QEuZ14Q8jmLUaw20hM4T9zz9qXRxbceZ..
+    Docentes6@javeriana.edu.co:
+      email: Docentes6@javeriana.edu.co
+      name: Docente 6
+      rol: Docente
+      password: $2b$12$l4r/9Qvj8ZuSpkYxiNCEtOdU6tuskMZeENFjcALaA1T7peypJzUVG
+    Docentes7@javeriana.edu.co:
+      email: Docentes7@javeriana.edu.co
+      name: Docente 7
+      rol: Docente
+      password: $2b$12$ztAi8m4g03TdQrD/gdzpp.uYnno7/f6gI3Wv.Q6YfuLCjyXyaE9Ve
+    Docentes8@javeriana.edu.co:
+      email: Docentes8@javeriana.edu.co
+      name: Docente 8
+      rol: Docente
+      password: $2b$12$nuWiuEUF43zV4I24HPjA1emKLgUj.Lzdja.A3WiLQ8w/XksIDCyRG
+    garciasophia@javeriana.edu.co:
+      email: garciasophia@javeriana.edu.co
+      name: Sophia Garcia
+      rol: Estudiante
+      password: $2b$12$Kv4Bxf4ZUmdDyd7gk.w0IOGwro0AeppOzvHkGxW2aewXkeFY091r.
+    lucas.restrepom@javeriana.edu.co:
+      email: lucas.restrepom@javeriana.edu.co
+      name: Lucas Restrepo
+      rol: Estudiante
+      password: $2b$12$u4GT2CAvVaQdgWFlrn55/OuX1hcDlCfW8Ra63vWdvw3eXq9szrobm
+    juan.ruizc@javeriana.edu.co:
+      email: juan.ruizc@javeriana.edu.co
+      name: Juan Sebastian Ruiz
+      rol: Estudiante
+      password: $2b$12$hQgR57eKEx0gOQvBbFCaZ.IVYNmW.HDeIs8E0XcRhYewn7k020XVK
+    gonzalez_yibby@javeriana.edu.co:
+      email: gonzalez_yibby@javeriana.edu.co
+      name: Yibby Daniela Gonzalez
+      rol: Estudiante
+      password: $2b$12$cspwWb1IdUh/n/yovZ8Y/eteQGlGxrlNTzRawYLVpOMMEr82bBI1i
+preauthorized:
+  emails:
+    - ''
+cookie:
+  expiry_days: 1
+  key: mbe_javeriana_2025_secret
+  name: mbe_auth_cookie
